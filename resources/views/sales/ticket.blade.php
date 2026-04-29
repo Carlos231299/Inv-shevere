@@ -60,11 +60,12 @@
 
     <div class="header text-center">
         <img src="{{ asset('images/logo.png') }}" alt="Logo" style="width: 40mm; height: auto; margin-bottom: 5px;">
-        <h3 style="margin: 0;">CARNICERÍA SALOMÉ</h3>
-        <div>NIT: 9015980377</div>
-        <div>Dirección: CALLE 10 15 56 ZN MDO PUBLICO BRR CENTRO</div>
-        <div class="bold">Cel: 300 877 6325 / Nequi</div>
-        <div class="bold">Bancolombia: 09600001683 (Ahorros)</div>
+        <h3 style="margin: 0;">AUTOSERVICIO SHEVERE</h3>
+        <div>NIT: 901.XXX.XXX-X</div>
+        <div>Dirección: [DIRECCIÓN AQUÍ]</div>
+        <div class="bold">Cel: [TELÉFONO AQUÍ]</div>
+        <div class="bold">Info Pago: [BANCOS AQUÍ]</div>
+
         <div class="line"></div>
         <div class="bold">FACTURA DE VENTA #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
         <div>Fecha: {{ $sale->created_at->format('d/m/Y h:i A') }}</div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Carnicería Salomé</title>
+    <title>Login - {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -149,7 +149,7 @@
 <div class="login-card">
     <div class="logo-container">
         <!-- Assuming logo.png exists, otherwise verify path -->
-        <img src="{{ asset('images/logo.png') }}" alt="Carnicería Salomé Logo">
+        <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} Logo">
     </div>
     <h1>Bienvenido</h1>
     <p class="subtitle">Ingresa tus credenciales para continuar</p>

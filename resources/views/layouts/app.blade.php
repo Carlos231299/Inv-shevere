@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Carnicería Salomé - Inventario</title>
+    <title>{{ config('app.name') }} - Gestión</title>
     <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
 
     <!-- Google Fonts -->
@@ -183,7 +183,7 @@
         <aside class="sidebar collapsed" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <img src="{{ asset('images/logo.png') }}" alt="Carnicería Salomé" class="logo-img">
+                    <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="logo-img">
                 </div>
             </div>
             
@@ -196,12 +196,14 @@
                     <span class="nav-icon">🥩</span>
                     <span class="nav-text">Productos</span>
                 </a>
+                {{-- 
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('reports.products') }}" class="nav-link {{ request()->routeIs('reports.products') ? 'active' : '' }}" title="Reporte Productos">
                     <span class="nav-icon">📈</span>
                     <span class="nav-text">Ventas x Producto</span>
                 </a>
                 @endif
+                --}}
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('providers.index') }}" class="nav-link {{ request()->routeIs('providers.*') ? 'active' : '' }}" title="Proveedores">
                     <span class="nav-icon">🚛</span>
@@ -222,15 +224,18 @@
                     <span class="nav-icon">📉</span>
                     <span class="nav-text">Gastos</span>
                 </a>
+                {{-- 
                 <a href="{{ route('workers.index') }}" class="nav-link {{ request()->routeIs('workers.*') ? 'active' : '' }}" title="Trabajadores">
                     <span class="nav-icon">👷</span>
                     <span class="nav-text">Trabajadores</span>
                 </a>
+                --}}
                 <a href="{{ route('clients.index') }}" class="nav-link {{ request()->routeIs('clients.*') ? 'active' : '' }}" title="Clientes">
                     <span class="nav-icon">👥</span>
                     <span class="nav-text">Clientes</span>
                 </a>
                 {{-- Cuentas Submenu --}}
+                {{-- 
                 <div class="nav-item">
                     <a href="#" class="nav-link submenu-toggle {{ request()->routeIs('credits.*') || request()->routeIs('cuentas-por-pagar.*') ? 'active' : '' }}" title="Cuentas">
                         <span class="nav-icon">💳</span>
@@ -248,18 +253,21 @@
                         @endif
                     </div>
                 </div>
+                --}}
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" title="Reportes">
                     <span class="nav-icon">📄</span>
                     <span class="nav-text">Reportes</span>
                 </a>
                 @endif
+                {{-- 
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" title="Usuarios">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Usuarios</span>
                 </a>
                 @endif
+                --}}
                 @if(auth()->user()->role === 'admin')
                 <a href="{{ route('initial-setup.index') }}" class="nav-link {{ request()->routeIs('initial-setup.*') ? 'active' : '' }}" title="Modo Inicial">
                     <span class="nav-icon">🚀</span>

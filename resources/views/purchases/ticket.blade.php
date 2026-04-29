@@ -59,8 +59,8 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <h3 style="margin: 0;">CARNICERÍA SALOMÉ</h3>
-        <div>NIT: 9015980377</div>
+        <h3 style="margin: 0;">AUTOSERVICIO SHEVERE</h3>
+        <div>NIT: 901.XXX.XXX-X</div>
         <div class="line"></div>
         <div class="bold">COMPROBANTE DE COMPRA #{{ str_pad($purchase->id, 6, '0', STR_PAD_LEFT) }}</div>
         <div>Fecha: {{ $purchase->created_at->format('d/m/Y h:i A') }}</div>
