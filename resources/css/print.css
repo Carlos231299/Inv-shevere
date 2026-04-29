@@ -1,0 +1,86 @@
+/* Print-specific styles */
+@media print {
+
+    /* Hide non-essential elements */
+    #sidebar,
+    #sidebar-toggle,
+    .topbar,
+    .btn,
+    form,
+    .nav-link,
+    .card-header a {
+        display: none !important;
+    }
+
+    /* Reset layout for printing */
+    body,
+    .app-container,
+    .main-content,
+    .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        /* Override sidebar margin */
+    }
+
+    /* Report Specifics */
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-header {
+        background: transparent !important;
+        border-bottom: 2px solid #333 !important;
+        text-align: center;
+    }
+
+    .financial-statement {
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    h2,
+    h3 {
+        color: black !important;
+    }
+
+    /* Ensure tables print nicely */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    th,
+    td {
+        border: 1px solid #ddd !important;
+        color: black !important;
+    }
+
+    /* Add a Print Header */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #8B0000;
+        padding-bottom: 10px;
+    }
+
+    .print-header h1 {
+        margin: 0;
+        color: #8B0000 !important;
+    }
+}
+
+.print-header {
+    display: none;
+    /* Hidden on screen */
+}

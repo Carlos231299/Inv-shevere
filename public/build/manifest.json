@@ -1,0 +1,26 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-C6qsSS7T.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/css/print.css": {
+    "file": "assets/print-DIgm-Ung.css",
+    "src": "resources/css/print.css",
+    "isEntry": true,
+    "name": "print",
+    "names": [
+      "print.css"
+    ]
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-Bh_5IBQU.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true
+  }
+}
