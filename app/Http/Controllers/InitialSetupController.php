@@ -289,6 +289,8 @@ class InitialSetupController extends Controller
             ['PRODUCTO DE EJEMPLO', '123456', 5000, 3500, 10]
         ];
 
+        if (ob_get_length()) ob_end_clean();
+
         return SimpleXLSXGen::fromArray($data)->downloadAs('plantilla_productos_shevere.xlsx');
     }
 }

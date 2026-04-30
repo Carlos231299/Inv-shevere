@@ -265,8 +265,9 @@
     <div class="text-center" style="margin-top: 20px;">
         <div class="line"></div>
         <p style="margin: 5px 0; font-weight: 900;">¡GRACIAS POR SU COMPRA!</p>
-        <p style="font-size: 9px; font-weight: normal;">Desarrolado por: Ing. Carlos Bastidas & Ing. Jarlin Esquivel -
-            304 218 9080 / 300 487 9915</p>
+        <p style="font-size: 9px; font-weight: normal;">Desarrollado por:</p>
+        <p style="font-size: 9px; font-weight: normal;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel -</p>
+        <p style="font-size: 9px; font-weight: normal;">304 218 9080 / 300 487 9915</p>
     </div>
 
     <script>
