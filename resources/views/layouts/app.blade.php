@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name') }} - Gestión</title>
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -24,7 +24,7 @@
 
     <!-- PWA Manifest & SW -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#D32F2F">
+    <meta name="theme-color" content="#27AE60">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -34,6 +34,7 @@
             });
         }
     </script>
+
     
     <style>
         /* Pagination Fixes */
@@ -180,10 +181,10 @@
     <div class="app-container" id="app">
         <div class="sidebar-overlay"></div>
         <!-- Sidebar -->
-        <aside class="sidebar collapsed" id="sidebar">
+        <aside class="sidebar collapsed glass-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="logo-img">
+                    <img src="{{ asset('images/logo.svg') }}" alt="{{ config('app.name') }}" class="logo-img">
                 </div>
             </div>
             
@@ -286,7 +287,7 @@
         <!-- Main Content -->
         <main class="main-content expanded" id="main-content">
             <!-- Topbar -->
-            <header class="topbar">
+            <header class="topbar glass-card">
                 <button id="sidebar-toggle" class="btn-toggle">
                     ☰
                 </button>

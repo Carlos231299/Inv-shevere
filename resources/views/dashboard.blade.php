@@ -6,11 +6,37 @@
             <span style="font-size:32px; font-weight:700; color:#333; line-height:1;">
                 Panel de control
             </span>
-            <button onclick="showExportModal()"
-                class="btn btn-primary"
-                style="background:#1976d2; border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-                📅 Resumen del Día (Caja)
-            </button>
+            <div>
+                @if($activeRegister)
+                    <span class="badge bg-success me-2" style="font-size: 1rem; padding: 10px;">🟢 Caja Abierta</span>
+                    <button onclick="showAdjustmentModal('entry')" class="btn btn-success me-2" style="border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                        ➕ Entrada
+                    </button>
+                    <button onclick="showAdjustmentModal('exit')" class="btn btn-warning me-2" style="border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1); color: #fff;">
+                        ➖ Salida
+                    </button>
+                    <button onclick="showCloseBoxModal()"
+                        class="btn btn-danger me-2"
+                        style="border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                        🔒 Cerrar Caja (Cuadre)
+                    </button>
+                @else
+                    <span class="badge bg-danger me-2" style="font-size: 1rem; padding: 10px;">🔴 Caja Cerrada</span>
+                    <button onclick="showOpenBoxModal()"
+                        class="btn btn-success me-2"
+                        style="border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                        🔓 Apertura de Caja
+                    </button>
+                @endif
+                <a href="{{ route('cash-registers.index') }}" class="btn btn-secondary me-2" style="border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    📜 Historial
+                </a>
+                <button onclick="showExportModal()"
+                    class="btn btn-primary"
+                    style="background:#1976d2; border:none; padding:10px 20px; font-weight:600; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+                    📅 Resumen del Día (Exportar)
+                </button>
+            </div>
     </div>
 
     <br>
@@ -231,10 +257,10 @@
                     </div>
                     <div class="row align-items-center">
                         <div class="col-7">
-                            <div class="display-6 fw-bold mb-0" style="color: #333;"><span>$ {{ number_format(\App\Models\Setting::getInitialNequi() + ($incomeNequiToday - ($paidPayablesNequi + $expensesTodayNequi + $nequiPurchases)), 0) }}</span></div>
+                            <div class="display-6 fw-bold mb-0" style="color: #333;"><span>$ {{ number_format($nequiBalance, 0) }}</span></div>
                         </div>
                         <div class="col-5 text-end small text-muted">
-                            <div class="mb-1">Base: <span class="fw-bold">$ {{ number_format(\App\Models\Setting::getInitialNequi(), 0) }}</span></div>
+                            <div class="mb-1">Base: <span class="fw-bold">$ {{ number_format($baseNequi, 0) }}</span></div>
                             <div class="mb-1 text-success">Entradas Hoy: +$ {{ number_format($incomeNequiToday, 0) }}</div>
                             <div class="text-danger">Salidas Hoy: -$ {{ number_format($paidPayablesNequi + $expensesTodayNequi + $nequiPurchases, 0) }}</div>
                         </div>
@@ -256,10 +282,10 @@
                     </div>
                     <div class="row align-items-center">
                         <div class="col-7">
-                            <div class="display-6 fw-bold mb-0" style="color: #333;"><span>$ {{ number_format(\App\Models\Setting::getInitialBancolombia() + ($incomeBancolombiaToday - ($paidPayablesBancolombia + $expensesTodayBancolombia + $bancolombiaPurchases)), 0) }}</span></div>
+                            <div class="display-6 fw-bold mb-0" style="color: #333;"><span>$ {{ number_format($bancolombiaBalance, 0) }}</span></div>
                         </div>
                         <div class="col-5 text-end small text-muted">
-                            <div class="mb-1">Base: <span class="fw-bold">$ {{ number_format(\App\Models\Setting::getInitialBancolombia(), 0) }}</span></div>
+                            <div class="mb-1">Base: <span class="fw-bold">$ {{ number_format($baseBancolombia, 0) }}</span></div>
                             <div class="mb-1 text-success">Entradas Hoy: +$ {{ number_format($incomeBancolombiaToday, 0) }}</div>
                             <div class="text-danger">Salidas Hoy: -$ {{ number_format($paidPayablesBancolombia + $expensesTodayBancolombia + $bancolombiaPurchases, 0) }}</div>
                         </div>
@@ -322,6 +348,226 @@
                 window.open(`{{ route('reports.daily.pdf') }}?date=${date}`, '_blank');
             }
         });
+    }
+
+    function showOpenBoxModal() {
+        Swal.fire({
+            title: '🔓 Apertura de Caja',
+            width: '500px',
+            html: `
+                <div class="alert alert-info small text-start">Ingrese los saldos iniciales (bases) para el día de hoy.</div>
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Efectivo en Caja (Base):</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">$</span>
+                        <input type="number" id="open-cash" class="form-control" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Saldo Inicial Nequi:</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">$</span>
+                        <input type="number" id="open-nequi" class="form-control" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Saldo Inicial Bancolombia:</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">$</span>
+                        <input type="number" id="open-bancolombia" class="form-control" placeholder="0" min="0">
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Abrir Caja',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const cash = document.getElementById('open-cash').value;
+                const nequi = document.getElementById('open-nequi').value;
+                const bancolombia = document.getElementById('open-bancolombia').value;
+                
+                if (cash === '' || nequi === '' || bancolombia === '') {
+                    Swal.showValidationMessage('Todos los saldos iniciales son requeridos (pueden ser 0)');
+                }
+                return { 
+                    initial_cash: cash || 0,
+                    initial_nequi: nequi || 0,
+                    initial_bancolombia: bancolombia || 0
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ route("cash-registers.open") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(result.value)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        Swal.fire('¡Caja Abierta!', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                }).catch(err => Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error'));
+            }
+        });
+    }
+
+    function showAdjustmentModal(type) {
+        const title = type === 'entry' ? '➕ Registrar Entrada de Dinero' : '➖ Registrar Salida / Retiro';
+        const color = type === 'entry' ? '#28a745' : '#ffc107';
+        
+        Swal.fire({
+            title: title,
+            html: `
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Monto:</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">$</span>
+                        <input type="number" id="adj-amount" class="form-control" placeholder="0" min="0.01">
+                    </div>
+                </div>
+                <div class="text-start mb-3">
+                    <label class="form-label fw-bold">Método de Pago:</label>
+                    <select id="adj-method" class="form-select">
+                        <option value="cash">Efectivo</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="bancolombia">Bancolombia</option>
+                    </select>
+                </div>
+                <div class="text-start">
+                    <label class="form-label fw-bold">Descripción / Motivo:</label>
+                    <input type="text" id="adj-description" class="form-control" placeholder="Ej: Pago factura luz, Inyección de capital...">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Registrar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: color,
+            preConfirm: () => {
+                const amount = document.getElementById('adj-amount').value;
+                const method = document.getElementById('adj-method').value;
+                const description = document.getElementById('adj-description').value;
+                
+                if (!amount || amount <= 0) {
+                    Swal.showValidationMessage('Debe ingresar un monto válido');
+                }
+                return { type, amount, payment_method: method, description };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ route("cash-registers.adjustment") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(result.value)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('¡Éxito!', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function showCloseBoxModal() {
+        // Fetch System Totals First
+        Swal.fire({
+            title: 'Cargando totales...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch('{{ route("cash-registers.totals") }}')
+            .then(res => res.json())
+            .then(data => {
+                if(!data.success) {
+                    Swal.fire('Error', data.message, 'error');
+                    return;
+                }
+
+                Swal.fire({
+                    title: '🔒 Cuadre y Cierre de Caja',
+                    width: '600px',
+                    html: `
+                        <div class="alert alert-info text-start mb-3" style="font-size:0.9rem;">
+                            Ingrese el dinero físico que tiene actualmente en su poder.
+                        </div>
+                        <div class="row text-start align-items-center mb-3">
+                            <div class="col-4 fw-bold">Efectivo</div>
+                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_cash)}</div>
+                            <div class="col-4"><input type="number" id="close-cash" class="form-control form-control-sm" placeholder="Físico"></div>
+                        </div>
+                        <div class="row text-start align-items-center mb-3">
+                            <div class="col-4 fw-bold">Nequi</div>
+                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_nequi)}</div>
+                            <div class="col-4"><input type="number" id="close-nequi" class="form-control form-control-sm" placeholder="Físico"></div>
+                        </div>
+                        <div class="row text-start align-items-center mb-3">
+                            <div class="col-4 fw-bold">Bancolombia</div>
+                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_bancolombia)}</div>
+                            <div class="col-4"><input type="number" id="close-bancolombia" class="form-control form-control-sm" placeholder="Físico"></div>
+                        </div>
+                        <div class="text-start mt-3">
+                            <label class="form-label">Notas / Novedades:</label>
+                            <textarea id="close-notes" class="form-control" rows="2" placeholder="Opcional..."></textarea>
+                        </div>
+                        <div class="form-check text-start mt-3">
+                            <input class="form-check-input" type="checkbox" id="close-withdraw" checked>
+                            <label class="form-check-input-label fw-bold text-danger" for="close-withdraw">
+                                🏦 Retirar efectivo a Caja Fuerte (El panel quedará en $0)
+                            </label>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Cerrar Caja e Imprimir',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#dc3545',
+                    preConfirm: () => {
+                        return {
+                            physical_cash: document.getElementById('close-cash').value || 0,
+                            physical_nequi: document.getElementById('close-nequi').value || 0,
+                            physical_bancolombia: document.getElementById('close-bancolombia').value || 0,
+                            notes: document.getElementById('close-notes').value,
+                            withdraw_to_safe: document.getElementById('close-withdraw').checked
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('{{ route("cash-registers.close") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(result.value)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.success) {
+                                Swal.fire('¡Caja Cerrada!', data.message, 'success').then(() => {
+                                    window.open('/cash-registers/' + data.id + '/ticket', '_blank');
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.message, 'error');
+                            }
+                        }).catch(err => Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error'));
+                    }
+                });
+            })
+            .catch(err => Swal.fire('Error', 'No se pudieron obtener los saldos.', 'error'));
     }
 
     document.addEventListener('DOMContentLoaded', function() {

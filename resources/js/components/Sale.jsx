@@ -11,10 +11,6 @@ export default function Sale() {
     // Selection state
     // Selection state
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [quantityToAdd, setQuantityToAdd] = useState(1);
-    const [priceToAdd, setPriceToAdd] = useState(''); // Custom Price State
-    const [selectedUnit, setSelectedUnit] = useState('');
-    const [availableUnits, setAvailableUnits] = useState([]);
 
     // Helper to format currency for inputs
     const formatCurrencyValue = (val) => {
@@ -54,19 +50,24 @@ export default function Sale() {
     const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
     const inputRef = useRef(null);
-    const quantityRef = useRef(null);
 
-    // Fetch Products on Mount
+    // Fetch Products
+    const fetchProducts = async () => {
+        try {
+            const res = await fetch(`/api/products-list?t=${Date.now()}`, {
+                headers: { 
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            const data = await res.json();
+            setProducts(data);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const res = await fetch('/api/products-list');
-                const data = await res.json();
-                setProducts(data);
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
-        };
         fetchProducts();
 
         const fetchNextId = async () => {
@@ -202,147 +203,98 @@ export default function Sale() {
         setFilteredProducts(filtered);
     }, [search, products, selectedProduct]);
 
-    // Handle selection from Dropdown
-    const handleSelectProduct = (product) => {
+    // Auto Add Product to Cart (Scanner or Dropdown Click)
+    const autoAddProduct = (product) => {
         if (product.stock <= 0) {
             Swal.fire('Sin Stock', `El producto ${product.name} tiene stock 0.`, 'warning');
             return;
         }
 
-        setSearch(product.name);
-        setSelectedProduct(product);
-        setShowDropdown(false);
-        setQuantityToAdd(1);
-        setPriceToAdd(formatCurrencyValue(product.sale_price)); // Set Default Price
+        let defaultUnitValue = 'unit';
+        let defaultUnitLabel = 'Unidad';
+        let factor = 1;
 
-        // Define units based on product type
         if (product.measure_type === 'kg') {
-            setAvailableUnits([
-                { label: 'Kilogramos (kg)', value: 'kg', factor: 1 },
-                { label: 'Libras (500g)', value: 'lb', factor: 0.5 },
-                { label: 'Gramos (g)', value: 'g', factor: 0.001 }
-            ]);
-            setSelectedUnit('kg');
-        } else {
-            setAvailableUnits([
-                { label: 'Unidad', value: 'unit', factor: 1 }
-            ]);
-            setSelectedUnit('unit');
+            defaultUnitValue = 'kg';
+            defaultUnitLabel = 'Kilogramos (kg)';
         }
 
-        // Focus quantity
-        setTimeout(() => quantityRef.current?.focus(), 100);
-        // Auto-Focus on Quantity Input
-        setTimeout(() => {
-            if (quantityRef.current) {
-                quantityRef.current.focus();
-                quantityRef.current.select();
-            }
-        }, 100);
-    };
-
-    const handleAddItem = () => {
-        if (!selectedProduct) {
-            const match = products.find(p => p.sku === search || p.name.toLowerCase() === search.toLowerCase());
-            if (match) {
-                handleSelectProduct(match);
-                // Note: Ideally we select it, then user inputs quantity. 
-                // If enter was pressed on search, we select it first.
-                return;
-            }
-            Swal.fire('Seleccione un producto', 'Busque y seleccione un producto de la lista.', 'info');
-            return;
-        }
-        addItemToCart();
-    };
-
-    const addItemToCart = () => {
-        const inputQty = parseFloat(quantityToAdd);
-        const inputPrice = parseCurrencyValue(priceToAdd); // Parse Custom Price
-
-        if (isNaN(inputQty) || inputQty <= 0) {
-            Swal.fire('Cantidad inválida', 'Ingrese una cantidad mayor a 0', 'warning');
-            return;
-        }
-        if (isNaN(inputPrice) || inputPrice < 0) {
-            Swal.fire('Precio inválido', 'Ingrese un precio válido', 'warning');
-            return;
-        }
-
-        // Calculate Normalized Quantity (always in base unit for DB)
-        const unitData = availableUnits.find(u => u.value === selectedUnit);
-        const factor = unitData ? unitData.factor : 1;
+        const inputQty = 1;
+        const inputPrice = parseFloat(product.sale_price) || 0;
         const normalizedQuantity = inputQty * factor;
 
-        // Multi-batch splitting logic
         let remainingBaseQty = normalizedQuantity;
         const newItems = [];
-        const productBatches = selectedProduct.batches || [];
+        const productBatches = product.batches || [];
 
-        // 1. If no batches (shouldn't happen with migration, but safety fallback)
         if (productBatches.length === 0) {
             newItems.push({
-                ...selectedProduct,
+                ...product,
                 displayQuantity: inputQty,
-                displayUnit: unitData.label,
-                displayUnitValue: selectedUnit,
+                displayUnit: defaultUnitLabel,
+                displayUnitValue: defaultUnitValue,
                 quantity: normalizedQuantity,
-                unitPrice: inputPrice, // Custom Price
-                sale_price: priceToAdd, // Send formatted string to backend (sanitizer will handle)
+                unitPrice: inputPrice,
+                sale_price: product.sale_price,
                 subtotal: normalizedQuantity * inputPrice
             });
         } else {
-            // 2. Consume batches FIFO
             for (const batch of productBatches) {
                 if (remainingBaseQty <= 0) break;
 
                 const takeFromBatch = Math.min(remainingBaseQty, batch.quantity);
                 if (takeFromBatch <= 0) continue;
 
-                // Portion of the display quantity (for display only)
-                // Ratio = takeFromBatch / normalizedQuantity
                 const portionDisplayQty = (takeFromBatch / factor);
 
                 newItems.push({
-                    ...selectedProduct,
-                    name: `${selectedProduct.name} (${batch.batch_number || 'Lote'})`,
+                    ...product,
+                    name: `${product.name} (${batch.batch_number || 'Lote'})`,
                     displayQuantity: portionDisplayQty,
-                    displayUnit: unitData.label,
-                    displayUnitValue: selectedUnit,
+                    displayUnit: defaultUnitLabel,
+                    displayUnitValue: defaultUnitValue,
                     quantity: takeFromBatch,
-                    unitPrice: inputPrice, // Custom Price override
-                    sale_price: priceToAdd, // Send formatted string
+                    unitPrice: inputPrice,
+                    sale_price: product.sale_price,
                     subtotal: takeFromBatch * inputPrice
                 });
 
                 remainingBaseQty -= takeFromBatch;
             }
 
-            // 3. Fallback for any remaining if batches didn't cover everything (e.g. stock mismatch)
             if (remainingBaseQty > 0) {
                 const portionDisplayQty = (remainingBaseQty / factor);
                 newItems.push({
-                    ...selectedProduct,
+                    ...product,
                     displayQuantity: portionDisplayQty,
-                    displayUnit: unitData.label,
-                    displayUnitValue: selectedUnit,
+                    displayUnit: defaultUnitLabel,
+                    displayUnitValue: defaultUnitValue,
                     quantity: remainingBaseQty,
-                    unitPrice: inputPrice, // Custom Price
-                    sale_price: priceToAdd,
+                    unitPrice: inputPrice,
+                    sale_price: product.sale_price,
                     subtotal: remainingBaseQty * inputPrice
                 });
             }
         }
 
-        setCart(prev => [...prev, ...newItems]);
+        // Add to top of cart for visibility
+        setCart(prev => [...newItems, ...prev]);
 
-        // Reset inputs
         setSearch('');
         setSelectedProduct(null);
-        setQuantityToAdd(1);
-        setPriceToAdd(''); // Reset Price
-        setAvailableUnits([]);
-        inputRef.current?.focus();
+        setShowDropdown(false);
+        setTimeout(() => inputRef.current?.focus(), 50);
+    };
+
+    const handleAddItem = () => {
+        const match = products.find(p => p.sku === search || p.name.toLowerCase() === search.toLowerCase());
+        if (match) {
+            autoAddProduct(match);
+            return;
+        }
+        if (search.trim() !== '') {
+            Swal.fire('No encontrado', 'El código de barras o nombre no coincide con ningún producto.', 'info');
+        }
     };
 
     const removeItem = (index) => {
@@ -361,6 +313,13 @@ export default function Sale() {
 
     const handleFinishSale = () => {
         if (cart.length === 0) return;
+
+        // Validation for 0 quantity
+        const hasZeroQty = cart.some(item => parseFloat(item.displayQuantity) <= 0 || isNaN(parseFloat(item.displayQuantity)));
+        if (hasZeroQty) {
+            Swal.fire('Cantidades en cero', 'Hay productos con cantidad cero en el carrito. Por favor elimínelos o asigne una cantidad válida antes de cobrar.', 'warning');
+            return;
+        }
 
         // Validation for Credit/Partial
         if ((paymentStatus === 'credit' || paymentStatus === 'partial') && !selectedClient) {
@@ -484,7 +443,16 @@ export default function Sale() {
                     setEditMode(false);
                     setEditId(null);
                     window.history.replaceState({}, document.title, "/sales");
+                } else {
+                    try {
+                        const nextIdRes = await fetch('/api/sales/next-id');
+                        const nextIdData = await nextIdRes.json();
+                        setNextId(nextIdData.next_id);
+                    } catch (e) {
+                        console.error('Error fetching next ID:', e);
+                    }
                 }
+                await fetchProducts(); // Force wait for fresh stock after sale
             } else {
                 const d = await res.json();
                 Swal.fire('Error', d.message || 'Error', 'error');
@@ -593,189 +561,76 @@ export default function Sale() {
                 {/* --- LEFT PANEL: PRODUCT CATALOG --- */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
 
-                    {/* Search Bar & Controls */}
-                    <div style={{ background: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                    {/* Search Bar & Dropdown */}
+                    <div style={{ background: 'white', padding: '15px', borderRadius: '15px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'relative', zIndex: 1050 }}>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            className="form-control form-control-lg"
+                            placeholder="🔍 Escanea o busca un producto..."
+                            value={search}
+                            onFocus={() => fetchProducts()}
+                            onChange={(e) => { setSearch(e.target.value); setShowDropdown(true); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(); }}
+                            autoFocus
+                            autoComplete="off"
+                            style={{ borderRadius: '12px', fontSize: '1.2rem', padding: '15px', background: '#f8f9fa', border: 'none' }}
+                        />
 
-                        {/* Search Input (Full Width) */}
-                        <div style={{ position: 'relative', marginBottom: '15px' }}>
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                className="form-control form-control-lg"
-                                placeholder="🔍 Buscar..."
-                                value={search}
-                                onChange={(e) => { setSearch(e.target.value); setSelectedProduct(null); }}
-                                onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(); }}
-                                autoFocus
-                                autoComplete="off"
-                                style={{ borderRadius: '12px', fontSize: '1.2rem', padding: '15px', background: '#f8f9fa', border: 'none' }}
-                            />
-                        </div>
-
-                        {/* Inline Add Controls - GRID LAYOUT (Matches Purchase.jsx) */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'minmax(100px, 1fr) 0.7fr 1fr 0.5fr 1fr auto',
-                            gap: '10px',
-                            alignItems: 'end',
-                            background: '#e3f2fd',
-                            borderRadius: '12px',
-                            padding: '15px'
-                        }}>
-                            {/* Unit Select */}
-                            <div>
-                                <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Unidad</label>
-                                <select
-                                    className="form-select border-0"
-                                    value={selectedUnit}
-                                    onChange={(e) => setSelectedUnit(e.target.value)}
-                                    style={{ width: '100%', fontWeight: 'bold', color: '#1565c0', height: '40px', background: 'white' }}
-                                    disabled={availableUnits.length === 0}
-                                >
-                                    {availableUnits.map(u => (
-                                        <option key={u.value} value={u.value}>{u.label}</option>
-                                    ))}
-                                    {availableUnits.length === 0 && <option>--</option>}
-                                </select>
-                            </div>
-
-                            {/* Average Price (Readonly) */}
-                            <div>
-                                <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>P. Prom</label>
-                                <input
-                                    type="text"
-                                    className="form-control border-0"
-                                    value={selectedProduct ? formatCurrencyValue(selectedProduct.average_sale_price) : ''}
-                                    readOnly
-                                    disabled
-                                    placeholder="0"
-                                    style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#7f8c8d', height: '40px', background: 'white' }}
-                                />
-                            </div>
-
-                            {/* Custom Price Input */}
-                            <div>
-                                <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>P. Venta</label>
-                                <input
-                                    type="text"
-                                    className="form-control border-0"
-                                    value={priceToAdd}
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9.,]/g, '');
-                                        setPriceToAdd(val);
-                                    }}
-                                    onBlur={(e) => {
-                                        if (!e.target.value) return;
-                                        let val = e.target.value.replace(/\./g, '').replace(',', '.');
-                                        if (!isNaN(val)) {
-                                            setPriceToAdd(formatCurrencyValue(val));
-                                        }
-                                    }}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(); }}
-                                    placeholder="0"
-                                    style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1565c0', height: '40px', background: 'white' }}
-                                />
-                            </div>
-
-                            {/* Quantity Input */}
-                            <div>
-                                <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Cant.</label>
-                                <input
-                                    ref={quantityRef}
-                                    type="number"
-                                    className="form-control border-0 text-center"
-                                    value={quantityToAdd}
-                                    onChange={(e) => setQuantityToAdd(e.target.value)}
-                                    min="0.1" step="0.1"
-                                    placeholder="1"
-                                    style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333', height: '40px', background: 'white' }}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(); }}
-                                />
-                            </div>
-
-                            {/* Total (Calculated) */}
-                            <div>
-                                <label className="form-label text-muted mb-1" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Total</label>
-                                <input
-                                    type="text"
-                                    className="form-control border-0"
-                                    value={formatCurrencyValue((parseCurrencyValue(priceToAdd) * (parseFloat(quantityToAdd) || 0)))}
-                                    readOnly
-                                    disabled
-                                    placeholder="$ 0"
-                                    style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2e7d32', height: '40px', background: 'white' }}
-                                />
-                            </div>
-
-                            {/* Add Button */}
-                            <button className="btn btn-primary h-100" onClick={handleAddItem} style={{ borderRadius: '8px', padding: '0 20px', fontWeight: 'bold', height: '40px' }}>
-                                + AGREGAR
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Product Grid / Results Area */}
-                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: '15px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                        {search.trim() ? (
-                            filteredProducts.length > 0 ? (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
-                                    {filteredProducts.map(p => (
+                        {/* Search Dropdown */}
+                        {search.trim() !== '' && showDropdown && (
+                            <div style={{
+                                position: 'absolute', top: '100%', left: 0, right: 0, background: 'white',
+                                borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', marginTop: '5px',
+                                maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee'
+                            }}>
+                                {filteredProducts.length > 0 ? (
+                                    filteredProducts.map(p => (
                                         <div
                                             key={p.sku}
-                                            onClick={() => handleSelectProduct(p)}
+                                            onClick={() => autoAddProduct(p)}
                                             style={{
-                                                border: selectedProduct?.sku === p.sku ? '2px solid #2196f3' : '1px solid #eee',
-                                                borderRadius: '12px', padding: '15px', cursor: 'pointer',
-                                                background: selectedProduct?.sku === p.sku ? '#e3f2fd' : 'white',
-                                                transition: 'all 0.2s', position: 'relative'
+                                                padding: '12px 15px', borderBottom: '1px solid #eee', cursor: 'pointer',
+                                                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                             }}
-                                            className="hover-shadow"
+                                            onMouseOver={(e) => e.currentTarget.style.background = '#f8f9fa'}
+                                            onMouseOut={(e) => e.currentTarget.style.background = 'white'}
                                         >
-                                            <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📦</div>
-                                            <div style={{ fontWeight: 'bold', fontSize: '1rem', lineHeight: '1.2', marginBottom: '5px', height: '40px', overflow: 'hidden' }}>{p.name}</div>
-                                            <div style={{ fontSize: '0.9rem', color: '#666' }}>{p.sku}</div>
-                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2e7d32', marginTop: '10px' }}>${p.sale_price.toLocaleString()}</div>
-                                            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.8rem', padding: '2px 8px', borderRadius: '10px', background: p.stock > 0 ? '#e8f5e9' : '#ffebee', color: p.stock > 0 ? '#2e7d32' : '#c62828' }}>
-                                                {p.stock} {p.measure_type}
+                                            <div>
+                                                <div style={{ fontWeight: 'bold' }}>{p.name}</div>
+                                                <div style={{ fontSize: '0.85rem', color: '#666' }}>{p.sku}</div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontWeight: 'bold', color: '#2e7d32' }}>${p.sale_price.toLocaleString()}</div>
+                                                <div style={{ fontSize: '0.8rem', color: p.stock > 0 ? 'green' : 'red' }}>Stock: {p.stock}</div>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div style={{ textAlign: 'center', color: '#999', marginTop: '50px' }}>
-                                    <h4>😕 No se encontraron productos</h4>
-                                    <p>Intenta con otro nombre o código.</p>
-                                </div>
-                            )
-                        ) : (
-                            // Show top items or instructions when empty
-                            <div style={{ textAlign: 'center', color: '#ccc', marginTop: '100px' }}>
-                                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔍</div>
-                                <h3>Empieza a escribir para buscar</h3>
-                                <p>Ingresa nombre o código de barras del producto</p>
+                                    ))
+                                ) : (
+                                    <div style={{ padding: '15px', textAlign: 'center', color: '#999' }}>
+                                        No se encontraron productos
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                </div>
 
-                {/* --- RIGHT PANEL: THE TICKET --- */}
-                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-
-                    {/* Body: Cart Items (NOW AT TOP) */}
-                    <div style={{ flex: 1, overflowY: 'auto', background: '#f8f9fa' }}>
+                    {/* Cart Items Table (Moved to Left Panel) */}
+                    <div style={{ flex: 1, overflowY: 'auto', background: 'white', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
                         {cart.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#adb5bd' }}>
-                                <div style={{ fontSize: '2rem' }}>🛒</div>
-                                <p>Carrito vacío</p>
+                            <div style={{ textAlign: 'center', margin: 'auto', padding: '40px', color: '#adb5bd' }}>
+                                <div style={{ fontSize: '4rem', opacity: 0.5 }}>🛒</div>
+                                <h3>Carrito vacío</h3>
+                                <p>Usa la barra superior para escanear o buscar productos.</p>
                             </div>
                         ) : (
                             <table className="table mb-0 w-100" style={{ tableLayout: 'fixed' }}>
-                                <thead style={{ background: '#8B0000', color: 'white' }} className="sticky-top">
+                                <thead style={{ background: '#0f172a', color: 'white' }} className="sticky-top">
                                     <tr>
-                                        <th style={{ width: '45%', padding: '10px 15px' }}>Prod</th>
-                                        <th className="text-center" style={{ width: '25%', padding: '10px 5px' }}>Cant</th>
-                                        <th className="text-end" style={{ width: '20%', padding: '10px 5px' }}>Valor $</th>
-                                        <th style={{ width: '10%' }}></th>
+                                        <th style={{ width: '45%', padding: '12px 15px', border: 'none' }}>Producto</th>
+                                        <th className="text-center" style={{ width: '25%', padding: '12px 5px', border: 'none' }}>Cant.</th>
+                                        <th className="text-end" style={{ width: '20%', padding: '12px 5px', border: 'none' }}>Valor</th>
+                                        <th style={{ width: '10%', border: 'none' }}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -794,12 +649,11 @@ export default function Sale() {
                                                     onChange={(e) => {
                                                         const val = e.target.value;
 
-                                                        // Allow clearing the input
                                                         if (val === '') {
                                                             const updatedCart = [...cart];
                                                             updatedCart[index] = {
                                                                 ...updatedCart[index],
-                                                                displayQuantity: '', // Allow string empty
+                                                                displayQuantity: '',
                                                                 quantity: 0,
                                                                 subtotal: 0
                                                             };
@@ -808,13 +662,11 @@ export default function Sale() {
                                                         }
 
                                                         const newDisplayQty = parseFloat(val);
-                                                        // Allow 0 for typing "0.5", but block negative
                                                         if (isNaN(newDisplayQty) || newDisplayQty < 0) return;
 
                                                         const updatedCart = [...cart];
                                                         const currentItem = updatedCart[index];
 
-                                                        // Find unit factor
                                                         let factor = 1;
                                                         if (currentItem.measure_type === 'kg') {
                                                             if (currentItem.displayUnitValue === 'lb') factor = 0.5;
@@ -823,7 +675,6 @@ export default function Sale() {
 
                                                         const newBaseQty = newDisplayQty * factor;
 
-                                                        // Update the item
                                                         updatedCart[index] = {
                                                             ...currentItem,
                                                             displayQuantity: newDisplayQty,
@@ -846,6 +697,12 @@ export default function Sale() {
                             </table>
                         )}
                     </div>
+                </div>
+
+                {/* --- RIGHT PANEL: THE TICKET --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+
+
 
                     {/* Metadata Header: Client & Info (NOW BELOW CART) */}
                     <div style={{ padding: '15px', background: '#f1f1f1', borderTop: '1px solid #ddd', borderBottom: '1px solid #ddd' }}>

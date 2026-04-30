@@ -34,7 +34,7 @@
 <body>
     <div class="header">
         <h1>RESUMEN DE CIERRE DE CAJA</h1>
-        <p>Carnicería Salomé - Cierre Diario</p>
+        <p>{{ \App\Models\Setting::getBusinessName() }} - Cierre Diario</p>
         <p>Fecha: {{ $dateStr }}</p>
     </div>
 
@@ -65,9 +65,15 @@
             <td style="padding: 10px;">(-) Abonos a Proveedores realizados hoy (Efectivo)</td>
             <td class="text-right" style="color: #d32f2f; padding: 10px;">- $ {{ number_format($cashPaymentsPaid, 0) }}</td>
         </tr>
+        @if($adjEntryCash > 0 || $adjExitCash > 0)
+        <tr>
+            <td style="padding: 10px;">(±) Ajustes Manuales (Entradas/Salidas Efectivo)</td>
+            <td class="text-right" style="color: #1976d2; padding: 10px;">{{ ($adjEntryCash - $adjExitCash) >= 0 ? '+' : '-' }} $ {{ number_format(abs($adjEntryCash - $adjExitCash), 0) }}</td>
+        </tr>
+        @endif
         <tr class="arqueo-header">
             <td style="padding: 12px; font-size: 14px;">EFECTIVO TOTAL QUE DEBE HABER EN CAJA</td>
-            <td class="text-right" style="padding: 12px; font-size: 14px;">$ {{ number_format($previousDayBalance + $cashSales + $paymentsToday - $expensesToday - $cashPurchases - $cashPaymentsPaid, 0) }}</td>
+            <td class="text-right" style="padding: 12px; font-size: 14px;">$ {{ number_format($efectivoTotal, 0) }}</td>
         </tr>
     </table>
 
@@ -86,9 +92,20 @@
             <td>(-) Abonos pagados hoy (Transferencias)</td>
             <td class="text-right" style="color: #d32f2f;">- $ {{ number_format($bankPaymentsPaid, 0) }}</td>
         </tr>
+        @php
+            $adjBank = $adjustmentsToday->whereIn('payment_method', ['nequi', 'bancolombia', 'bank', 'transfer']);
+            $adjEntryBank = $adjBank->where('type', 'entry')->sum('amount');
+            $adjExitBank = $adjBank->where('type', 'exit')->sum('amount');
+        @endphp
+        @if($adjEntryBank > 0 || $adjExitBank > 0)
+        <tr>
+            <td>(±) Ajustes Manuales (Entradas/Salidas Bancos)</td>
+            <td class="text-right" style="color: #1565c0;">{{ ($adjEntryBank - $adjExitBank) >= 0 ? '+' : '-' }} $ {{ number_format(abs($adjEntryBank - $adjExitBank), 0) }}</td>
+        </tr>
+        @endif
         <tr class="arqueo-header" style="background: #1976d2;">
             <td>TOTAL QUE DEBE HABER EN CUENTA (DEL DÍA)</td>
-            <td class="text-right">$ {{ number_format($transferSales + $bankPayments - $bankPaymentsPaid, 0) }}</td>
+            <td class="text-right">$ {{ number_format($totalBank, 0) }}</td>
         </tr>
     </table>
 
@@ -247,8 +264,41 @@
         </div>
     </div>
 
+    <!-- DETALLE DE AJUSTES MANUALES -->
+    @if($adjustmentsToday->count() > 0)
+    <div class="section-title">DETALLE DE AJUSTES MANUALES (Entradas y Salidas)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>Tipo</th>
+                <th>Método</th>
+                <th>Descripción / Motivo</th>
+                <th class="text-right">Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($adjustmentsToday as $adj)
+            <tr>
+                <td>{{ $adj->created_at->format('h:i A') }}</td>
+                <td style="color: {{ $adj->type == 'entry' ? '#2e7d32' : '#d32f2f' }}; font-weight: bold;">
+                    {{ $adj->type == 'entry' ? 'ENTRADA' : 'SALIDA' }}
+                </td>
+                <td class="text-center" style="font-size: 9px;">
+                    {{ strtoupper(str_replace(['cash', 'bank', 'transfer', 'credit'], ['EFE', 'TRA', 'TRA', 'CRE'], $adj->payment_method)) }}
+                </td>
+                <td>{{ $adj->description }}</td>
+                <td class="text-right" style="color: {{ $adj->type == 'entry' ? '#2e7d32' : '#d32f2f' }};">
+                    {{ $adj->type == 'entry' ? '+' : '-' }} $ {{ number_format($adj->amount, 0) }}
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
     <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; color: #999; font-size: 9px; text-align: center;">
-        Este documento es un registro oficial de movimientos diarios para Carnicería Salomé.
+        Este documento es un registro oficial de movimientos diarios para {{ \App\Models\Setting::getBusinessName() }}.
     </div>
 </body>
 </html>

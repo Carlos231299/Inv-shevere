@@ -135,10 +135,10 @@ export default function Purchase() {
 
     const fetchProducts = async () => {
         try {
-            const res = await fetch('/api/products-list', {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken()
+            const res = await fetch(`/api/products-list?t=${Date.now()}`, {
+                headers: { 
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
                 }
             });
             const data = await res.json();
@@ -426,7 +426,7 @@ export default function Purchase() {
                 });
                 setCart([]);
                 setShowConfirmation(false);
-                fetchProducts(); // Refresh stock/prices in local list
+                await fetchProducts(); // Refresh stock/prices in local list
                 if (editMode) {
                     // Optionally redirect after update
                     window.location.href = '/purchases'; // Or to a specific purchase detail page
@@ -494,6 +494,7 @@ export default function Purchase() {
                                 className="form-control form-control-lg"
                                 placeholder="🔍 Buscar Producto..."
                                 value={search}
+                                onFocus={() => fetchProducts()}
                                 onChange={(e) => {
                                     setSearch(e.target.value);
                                     setShowDropdown(true);

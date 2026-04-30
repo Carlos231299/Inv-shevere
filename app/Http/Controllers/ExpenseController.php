@@ -100,6 +100,15 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
+        // Verificar si hay caja abierta
+        $activeRegister = \App\Models\CashRegister::where('status', 'open')->first();
+        if (!$activeRegister) {
+            if ($request->ajax()) {
+                return response()->json(['message' => 'Debe abrir la caja primero desde el Panel de Control.'], 400);
+            }
+            return redirect()->back()->with('error', 'Debe abrir la caja primero desde el Panel de Control.');
+        }
+
         // Sanitize Amount
         if ($request->has('amount')) {
             $request->merge(['amount' => $this->sanitizeCurrency($request->amount)]);

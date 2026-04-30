@@ -3,7 +3,7 @@ const CACHE_NAME = 'salome-pos-v1';
 const urlsToCache = [
     '/',
     '/offline', // You might want to create a generic offline view later
-    '/images/logo.png'
+    '/images/logo.svg'
 ];
 
 // Install event

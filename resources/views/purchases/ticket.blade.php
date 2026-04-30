@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Comprobante de Compra</title>
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <style>
         html {
             background: #eee;
@@ -59,13 +59,27 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <h3 style="margin: 0;">AUTOSERVICIO SHEVERE</h3>
-        <div>NIT: 901.XXX.XXX-X</div>
+        <!-- Logo Textual Monocromático para Impresora Térmica -->
+        <div style="border: 2px solid #000; padding: 6px; margin: 0 auto 10px auto; display: inline-block; min-width: 60%;">
+            <div style="font-size: 24px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1;">
+                <span style="font-size: 28px;">$</span>HEVERE
+            </div>
+            <div style="font-size: 7.5px; font-weight: bold; letter-spacing: 0.5px; border-top: 2px solid #000; margin-top: 4px; padding-top: 4px;">
+                HOGAR &middot; CANASTA FAMILIAR &middot; MÁS
+            </div>
+        </div>
+
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 2px;">{{ \App\Models\Setting::getBusinessName() }}</div>
+        <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
+        <div class="bold" style="font-size: 11px; margin-top: 2px;">Soporte de Entrada</div>
+
         <div class="line"></div>
-        <div class="bold">COMPROBANTE DE COMPRA #{{ str_pad($purchase->id, 6, '0', STR_PAD_LEFT) }}</div>
-        <div>Fecha: {{ $purchase->created_at->format('d/m/Y h:i A') }}</div>
-        <div>Proveedor: {{ $purchase->provider ? $purchase->provider->name : 'General' }}</div>
+        <div class="bold" style="padding: 5px; margin-top: 5px; border: 1px solid #000; text-align: center;">COMPROBANTE DE COMPRA #{{ str_pad($purchase->id, 6, '0', STR_PAD_LEFT) }}</div>
+        <div style="font-size: 11px; margin-top: 5px;">Fecha: {{ $purchase->created_at->format('d/m/Y h:i A') }}</div>
+        <div class="bold" style="margin-top: 2px;">Proveedor: {{ $purchase->provider ? $purchase->provider->name : 'General' }}</div>
     </div>
+
+
 
     <div class="line"></div>
 

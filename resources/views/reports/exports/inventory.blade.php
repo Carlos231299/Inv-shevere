@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <div class="title">Carnicería Salomé - Inventario Valorizado</div>
+    <div class="title">{{ \App\Models\Setting::getBusinessName() }} - Inventario Valorizado</div>
     <p><strong>Fecha Corte:</strong> {{ date('d/m/Y H:i') }}</p>
     <p><strong>Valor Total Inventario:</strong> ${{ number_format($totalValue, 0) }}</p>
 

@@ -1,28 +1,46 @@
 :root {
-    /* Paleta Autoservicio Shevere */
-    --color-primary: #4f46e5;      /* Indigo Principal */
-    --color-primary-dark: #3730a3; /* Indigo Dark */
-    --color-secondary: #f8fafc;    /* Slate Light */
+    /* Paleta Premium Shevere (Basada en Logo) */
+    --color-primary: #27AE60;      /* Verde Esmeralda */
+    --color-primary-dark: #1E8449; /* Verde Oscuro */
+    --color-primary-light: #2ECC71; /* Verde Claro / Glow */
+    --color-secondary: #0f2a18;    /* Verde muy oscuro (Fondo Logo) */
     --color-white: #FFFFFF;
-    --color-black: #0f172a;        /* Slate Dark / Sidebar */
-    --color-gray-light: #f1f5f9;   /* Background */
-    --color-gray-dark: #334155;
+    --color-black: #0a0a0a;        /* Negro profundo */
+    --color-gray-light: #f1fcf4;   /* Fondo Mint muy claro */
+    --color-gray-dark: #111a13;    /* Fondo oscuro secundario */
     --color-text-main: #1e293b;
-    --color-success: #10b981;      /* Emerald */
-    --color-warning: #f59e0b;      /* Amber */
-    --color-danger: #ef4444;       /* Rose/Red */
+    --color-text-light: #64748b;
+    --color-success: #3DDC84;      /* Verde vibrante */
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
 
-
+    /* Glassmorphism & Effects */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-sidebar-bg: rgba(10, 10, 10, 0.95);
+    
     /* Spacing & Layout */
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 80px;
-    --header-height: 60px;
+    --header-height: 70px;
     --border-radius: 20px;
-    /* Softer border radius */
-    --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    /* Softer shadow */
-    --transition-speed: 0.3s;
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --transition-speed: 0.4s;
 }
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--box-shadow);
+}
+
+.glass-sidebar {
+    background: var(--glass-sidebar-bg);
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 
 * {
     box-sizing: border-box;
@@ -67,7 +85,7 @@ body {
 .btn-primary:hover {
     background-color: var(--color-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 8px 15px rgba(39, 174, 96, 0.4);
 }
 
 /* Layout Structure */
@@ -88,9 +106,10 @@ body {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    transition: width var(--transition-speed);
+    transition: all var(--transition-speed);
     z-index: 1000;
     overflow-x: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sidebar.collapsed {
@@ -116,6 +135,7 @@ body {
     max-width: 150px;
     height: auto;
     transition: all var(--transition-speed);
+    filter: drop-shadow(0 0 10px rgba(39, 174, 96, 0.2));
 }
 
 .sidebar.collapsed .logo-img {
@@ -129,25 +149,28 @@ body {
 }
 
 .nav-link {
-    color: var(--color-gray-light);
+    color: var(--color-white);
+    opacity: 0.7;
     text-decoration: none;
-    padding: 12px;
-    border-radius: 12px;
-    /* Slightly less rounded than cards */
+    padding: 14px 18px;
+    border-radius: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     overflow: hidden;
 }
 
 .nav-link:hover,
 .nav-link.active {
-    background-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: var(--color-white);
-    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.4);
+    opacity: 1;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    transform: translateX(5px);
 }
+
 
 .sidebar.collapsed .nav-text {
     opacity: 0;

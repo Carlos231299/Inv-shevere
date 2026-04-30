@@ -86,4 +86,38 @@ class Setting extends Model
     {
         return self::get('initial_mode_closed_at') !== null;
     }
+
+    /**
+     * Business Details Helpers
+     */
+    public static function getBusinessName()
+    {
+        return self::get('business_name', 'AUTOSERVICIO SHEVERE');
+    }
+
+    public static function getBusinessNit()
+    {
+        return self::get('business_nit', '901.XXX.XXX-X');
+    }
+
+    public static function getBusinessAddress()
+    {
+        return self::get('business_address', '[DIRECCIÓN AQUÍ]');
+    }
+
+    public static function getBusinessPhone()
+    {
+        return self::get('business_phone', '[TELÉFONO AQUÍ]');
+    }
+
+    public static function getBusinessEmail()
+    {
+        return self::get('business_email', 'contacto@shevere.com');
+    }
+
+    public static function getBusinessPaymentInfo()
+    {
+        return self::get('business_payment_info', '[BANCOS AQUÍ]');
+    }
 }
+

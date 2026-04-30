@@ -24,6 +24,12 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+        // Verificar si hay caja abierta
+        $activeRegister = \App\Models\CashRegister::where('status', 'open')->first();
+        if (!$activeRegister) {
+            return response()->json(['message' => 'No se puede registrar la compra. Debe abrir la caja primero desde el Panel de Control.'], 400);
+        }
+
         // 1. Sanitize Inputs before Validation
         $input = $request->all();
 

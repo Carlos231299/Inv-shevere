@@ -59,18 +59,29 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo" style="width: 40mm; height: auto; margin-bottom: 5px;">
-        <h3 style="margin: 0;">AUTOSERVICIO SHEVERE</h3>
-        <div>NIT: 901.XXX.XXX-X</div>
-        <div>Dirección: [DIRECCIÓN AQUÍ]</div>
-        <div class="bold">Cel: [TELÉFONO AQUÍ]</div>
-        <div class="bold">Info Pago: [BANCOS AQUÍ]</div>
+        <!-- Logo Textual Monocromático para Impresora Térmica -->
+        <div style="border: 2px solid #000; padding: 6px; margin: 0 auto 10px auto; display: inline-block; min-width: 60%;">
+            <div style="font-size: 24px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1;">
+                <span style="font-size: 28px;">$</span>HEVERE
+            </div>
+            <div style="font-size: 7.5px; font-weight: bold; letter-spacing: 0.5px; border-top: 2px solid #000; margin-top: 4px; padding-top: 4px;">
+                HOGAR &middot; CANASTA FAMILIAR &middot; MÁS
+            </div>
+        </div>
+        
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 2px;">{{ \App\Models\Setting::getBusinessName() }}</div>
+        <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
+        <div style="font-size: 11px;">Dirección: {{ \App\Models\Setting::getBusinessAddress() }}</div>
+        <div class="bold" style="font-size: 11px; margin-top: 2px;">Cel: {{ \App\Models\Setting::getBusinessPhone() }}</div>
+        <div style="font-size: 10px; margin-top: 2px;">Info: {{ \App\Models\Setting::getBusinessPaymentInfo() }}</div>
 
         <div class="line"></div>
-        <div class="bold">FACTURA DE VENTA #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
-        <div>Fecha: {{ $sale->created_at->format('d/m/Y h:i A') }}</div>
-        <div class="bold">Cliente: {{ $sale->client ? $sale->client->name : 'Consumidor Final' }}</div>
+        <div class="bold" style="padding: 5px; margin-top: 5px; border: 1px solid #000; text-align: center;">FACTURA DE VENTA #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
+        <div style="font-size: 11px; margin-top: 5px;">Fecha: {{ $sale->created_at->format('d/m/Y h:i A') }}</div>
+        <div class="bold" style="margin-top: 2px;">Cliente: {{ $sale->client ? $sale->client->name : 'Consumidor Final' }}</div>
     </div>
+
+
 
     <div class="line"></div>
 

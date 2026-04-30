@@ -322,7 +322,7 @@ class ReportController extends Controller
         $hClose = '</b></center></style>';
 
         $data = [
-            ['<style font-size="18"><center><b>INVENTARIO VALORIZADO - CARNICERÍA SALOMÉ</b></center></style>'],
+            ['<style font-size="18"><center><b>INVENTARIO VALORIZADO - ' . \App\Models\Setting::getBusinessName() . '</b></center></style>'],
             ['<center><b>Fecha Corte:</b> ' . date('d/m/Y h:i A') . '</center>'],
             [],
             [
@@ -636,11 +636,18 @@ class ReportController extends Controller
         
         $expensesToday = $expensesTodayList->where('payment_method', 'cash')->sum('amount');
 
+        // Manual Adjustments
+        $adjustmentsToday = \App\Models\CashAdjustment::whereDate('created_at', $today->toDateString())->get();
+        $adjEntryCash = $adjustmentsToday->where('type', 'entry')->where('payment_method', 'cash')->sum('amount');
+        $adjExitCash = $adjustmentsToday->where('type', 'exit')->where('payment_method', 'cash')->sum('amount');
+        $adjEntryBank = $adjustmentsToday->where('type', 'entry')->whereIn('payment_method', ['nequi', 'bancolombia', 'bank', 'transfer'])->sum('amount');
+        $adjExitBank = $adjustmentsToday->where('type', 'exit')->whereIn('payment_method', ['nequi', 'bancolombia', 'bank', 'transfer'])->sum('amount');
+
         // Cash Balance
-        $efectivoTotal = $previousDayBalance + $cashSales + $cashPaymentsReceived - $expensesToday - $cashPurchases - $cashPaymentsPaid;
+        $efectivoTotal = $previousDayBalance + $cashSales + $cashPaymentsReceived + $adjEntryCash - ($expensesToday + $cashPurchases + $cashPaymentsPaid + $adjExitCash);
         
         // Bank Total Today
-        $bancosTotalHoy = $bankSales + $bankPaymentsReceived - $bankPaymentsPaid;
+        $bancosTotalHoy = $bankSales + $bankPaymentsReceived + $adjEntryBank - ($bankPaymentsPaid + $adjExitBank);
 
         // 2. Excel Structure
         $hStyle = '<style bgcolor="#1976d2" color="#FFFFFF"><center><b>';
@@ -648,7 +655,7 @@ class ReportController extends Controller
         $sectionStyle = '<style bgcolor="#f0f0f0"><b>';
 
         $data = [
-            ['<style font-size="18"><center><b>CUADRE DE CAJA DIARIO - CARNICERÍA SALOMÉ</b></center></style>'],
+            ['<style font-size="18"><center><b>CUADRE DE CAJA DIARIO - ' . \App\Models\Setting::getBusinessName() . '</b></center></style>'],
             ['<center><b>Fecha:</b> ' . $dateStr . '</center>'],
             [],
             // Arqueo Section - CASH
@@ -753,7 +760,14 @@ class ReportController extends Controller
         $cashPaymentsPaid = $purchasePaymentsTodayList->where('payment_method', 'cash')->sum('amount');
         $bankPaymentsPaid = $purchasePaymentsTodayList->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('amount');
 
-        $totalBank = $transferSales + $bankPaymentsReceived - $bankPaymentsPaid;
+        // Manual Adjustments
+        $adjustmentsToday = \App\Models\CashAdjustment::whereDate('created_at', $today->toDateString())->get();
+        $adjEntryCash = $adjustmentsToday->where('type', 'entry')->where('payment_method', 'cash')->sum('amount');
+        $adjExitCash = $adjustmentsToday->where('type', 'exit')->where('payment_method', 'cash')->sum('amount');
+        $adjEntryBank = $adjustmentsToday->where('type', 'entry')->whereIn('payment_method', ['nequi', 'bancolombia', 'bank', 'transfer'])->sum('amount');
+        $adjExitBank = $adjustmentsToday->where('type', 'exit')->whereIn('payment_method', ['nequi', 'bancolombia', 'bank', 'transfer'])->sum('amount');
+
+        $totalBank = $transferSales + $bankPaymentsReceived + $adjEntryBank - ($bankPaymentsPaid + $adjExitBank);
 
         // 3. Arqueo Logic (Saldo Anterior)
         $initialCash = \App\Models\Setting::getInitialCash();
@@ -778,6 +792,9 @@ class ReportController extends Controller
 
         $previousDayBalance = $initialCash + $historyIncome - $historyOutgo;
 
+        // Cash Balance Calculation
+        $efectivoTotal = $previousDayBalance + $cashSales + $paymentsTodayReceived + $adjEntryCash - ($expensesToday + $cashPurchases + $cashPaymentsPaid + $adjExitCash);
+
         // Gross Profit Calculation
         $totalCost = $allMovementsToday->where('type', 'sale')->sum(function($m) {
             return $m->quantity * ($m->product->cost_price ?? 0);
@@ -799,14 +816,18 @@ class ReportController extends Controller
             'bankPayments' => $bankPaymentsReceived,
             'cashPaymentsPaid' => $cashPaymentsPaid,
             'bankPaymentsPaid' => $bankPaymentsPaid,
+            'efectivoTotal' => $efectivoTotal,
             'totalBank' => $totalBank,
             'cashPurchases' => $cashPurchases,
             'previousDayBalance' => $previousDayBalance,
-            'salesToday' => $salesToday,
             'purchasesToday' => $purchasesToday,
+            'salesToday' => $salesToday,
             'expensesTodayList' => $expensesTodayList,
             'paymentsTodayList' => $paymentsTodayList,
-            'purchasePaymentsTodayList' => $purchasePaymentsTodayList
+            'purchasePaymentsTodayList' => $purchasePaymentsTodayList,
+            'adjustmentsToday' => $adjustmentsToday,
+            'adjEntryCash' => $adjEntryCash,
+            'adjExitCash' => $adjExitCash,
         ]);
 
         return $pdf->stream('Cierre_de_Caja_' . $today->format('Y-m-d') . '.pdf');

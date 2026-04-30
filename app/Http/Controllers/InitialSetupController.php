@@ -148,6 +148,9 @@ class InitialSetupController extends Controller
             \DB::table('account_payables')->truncate();
             \DB::table('account_payable_payments')->truncate();
             \DB::table('batches')->truncate();
+            \DB::table('sale_payments')->truncate();
+            \DB::table('cash_adjustments')->truncate();
+            \DB::table('cash_registers')->truncate();
 
             // Reset Stock and Prices for all products
             \DB::table('products')->update([
@@ -160,6 +163,8 @@ class InitialSetupController extends Controller
             // Reset settings
             Setting::set('initial_inventory_mode', 'false');
             Setting::set('initial_cash_balance', '0');
+            Setting::set('initial_nequi_balance', '0');
+            Setting::set('initial_bancolombia_balance', '0');
             Setting::set('initial_mode_closed_at', null);
 
             \Schema::enableForeignKeyConstraints();

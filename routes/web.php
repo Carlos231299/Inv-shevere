@@ -104,6 +104,14 @@ Route::middleware(['auth'])->group(function () {
     // Inventory Adjustment (Silent)
     Route::post('/inventory/adjust', [\App\Http\Controllers\InventoryController::class, 'adjust'])->name('inventory.adjust');
 
+    // Cash Registers (Cuadres de Caja)
+    Route::get('/cash-registers', [\App\Http\Controllers\CashRegisterController::class, 'index'])->name('cash-registers.index');
+    Route::post('/cash-registers/open', [\App\Http\Controllers\CashRegisterController::class, 'open'])->name('cash-registers.open');
+    Route::get('/cash-registers/totals', [\App\Http\Controllers\CashRegisterController::class, 'getSystemTotals'])->name('cash-registers.totals');
+    Route::post('/cash-registers/adjustment', [\App\Http\Controllers\CashRegisterController::class, 'storeAdjustment'])->name('cash-registers.adjustment');
+    Route::post('/cash-registers/close', [\App\Http\Controllers\CashRegisterController::class, 'close'])->name('cash-registers.close');
+    Route::get('/cash-registers/{id}/ticket', [\App\Http\Controllers\CashRegisterController::class, 'ticket'])->name('cash-registers.ticket');
+
     // Settings
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');

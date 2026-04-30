@@ -17,7 +17,7 @@
 
 </head>
 <body>
-    <div class="title">Carnicería Salomé - Estado de Resultados</div>
+    <div class="title">{{ \App\Models\Setting::getBusinessName() }} - Estado de Resultados</div>
     <div class="meta">
         <strong>Generado:</strong> {{ date('d/m/Y H:i') }}<br>
         <strong>Desde:</strong> {{ $startDate }}<br>

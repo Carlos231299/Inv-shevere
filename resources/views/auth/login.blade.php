@@ -4,26 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - {{ config('app.name') }}</title>
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #8B0000; /* Dark Red */
-            --text-color: #333;
+            --primary-color: #27AE60; 
+            --primary-dark: #1E8449;
+            --text-color: #f8fafc;
         }
         body {
             background-image: url('{{ asset("images/login-bg.png") }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Outfit', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            color: var(--text-color);
         }
-        /* Overlay to improve text readability on background */
+        /* Gradient Overlay */
         body::before {
             content: "";
             position: absolute;
@@ -31,66 +35,70 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Darken background slightly */
+            background: linear-gradient(135deg, rgba(10, 26, 19, 0.9), rgba(0, 0, 0, 0.8));
             z-index: -1;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.95); /* High opacity white */
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
-            backdrop-filter: blur(5px);
-            border-top: 5px solid var(--primary-color);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .logo-container {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         .logo-container img {
-            max-height: 80px;
+            max-height: 120px;
+            filter: drop-shadow(0 0 15px rgba(39, 174, 96, 0.3));
         }
 
         h1 { 
-            color: var(--primary-color); 
-            margin-bottom: 10px; 
+            color: #fff; 
+            margin-bottom: 5px; 
             font-weight: 700;
+            letter-spacing: -1px;
         }
         
         p.subtitle {
-            color: #666;
-            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 35px;
             font-size: 0.95rem;
         }
 
         .form-group { 
-            margin-bottom: 20px; 
+            margin-bottom: 25px; 
             text-align: left; 
-            position: relative;
         }
         label { 
             display: block; 
-            margin-bottom: 8px; 
-            color: var(--text-color); 
+            margin-bottom: 10px; 
+            color: rgba(255, 255, 255, 0.8); 
             font-weight: 500;
             font-size: 0.9rem;
         }
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
             box-sizing: border-box;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
         input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.2);
         }
 
         /* Password Toggle */
@@ -99,16 +107,15 @@
         }
         .toggle-password {
             position: absolute;
-            right: 12px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #777;
+            color: rgba(255, 255, 255, 0.4);
             background: none;
             border: none;
             padding: 0;
             font-size: 1.2rem;
-            user-select: none;
         }
         .toggle-password:hover {
             color: var(--primary-color);
@@ -116,28 +123,30 @@
 
         button {
             width: 100%;
-            padding: 14px;
-            background-color: var(--primary-color);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-            margin-top: 10px;
+            transition: all 0.3s;
+            margin-top: 15px;
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.2);
         }
         button:hover { 
-            background-color: #660000; 
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(39, 174, 96, 0.3);
         }
         button:active {
             transform: scale(0.98);
         }
 
         .error { 
-            color: #d32f2f; 
+            color: #ff4d4d; 
             font-size: 0.85em; 
-            margin-top: 5px; 
+            margin-top: 8px; 
             display: flex;
             align-items: center;
             gap: 5px;
@@ -148,11 +157,11 @@
 
 <div class="login-card">
     <div class="logo-container">
-        <!-- Assuming logo.png exists, otherwise verify path -->
-        <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} Logo">
+        <img src="{{ asset('images/logo.svg') }}" alt="{{ config('app.name') }} Logo">
     </div>
     <h1>Bienvenido</h1>
-    <p class="subtitle">Ingresa tus credenciales para continuar</p>
+    <p class="subtitle">Accede al panel de control de Shevere</p>
+
 
     <form action="{{ route('login') }}" method="POST">
         @csrf
