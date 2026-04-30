@@ -210,6 +210,36 @@ export default function Sale() {
             return;
         }
 
+        // Check if product already in cart to increment instead of duplicate
+        const existingIndex = cart.findIndex(item => item.sku === product.sku);
+        if (existingIndex !== -1) {
+            const updatedCart = [...cart];
+            const item = updatedCart[existingIndex];
+            const newDisplayQty = (parseFloat(item.displayQuantity) || 0) + 1;
+            
+            let factor = 1;
+            if (item.measure_type === 'kg') {
+                if (item.displayUnitValue === 'lb') factor = 0.5;
+                if (item.displayUnitValue === 'g') factor = 0.001;
+            }
+            
+            const newBaseQty = newDisplayQty * factor;
+            
+            updatedCart[existingIndex] = {
+                ...item,
+                displayQuantity: newDisplayQty,
+                quantity: newBaseQty,
+                subtotal: newBaseQty * item.unitPrice
+            };
+            
+            setCart(updatedCart);
+            setSearch('');
+            setSelectedProduct(null);
+            setShowDropdown(false);
+            setTimeout(() => inputRef.current?.focus(), 50);
+            return;
+        }
+
         let defaultUnitValue = 'unit';
         let defaultUnitLabel = 'Unidad';
         let factor = 1;
