@@ -80,10 +80,7 @@
                 <h6 style="color: #6c757d; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">📦 Productos Iniciales</h6>
                 <h2 style="font-weight: bold; color: #1976d2; margin: 10px 0;">{{ $initialInventoryCount }}</h2>
                 @if($isInitialMode)
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('purchases.index') }}" class="btn btn-sm btn-primary">Registrar Compra</a>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openImportModal()">📦 Importar Excel</button>
-                    </div>
+                    <a href="{{ route('purchases.index') }}" class="btn btn-sm btn-primary">Registrar Compra</a>
                 @endif
             </div>
         </div>
@@ -211,41 +208,6 @@
             </form>
         </div>
     </div>
-    <!-- Modal Importar Productos -->
-    <div class="modal fade" id="importModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form action="{{ route('initial-setup.import') }}" method="POST" enctype="multipart/form-data" class="modal-content">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">📦 Importación Masiva (Excel)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">1. Descarga la plantilla</label>
-                        <p class="small text-muted">Usa este archivo Excel para organizar tus productos.</p>
-                        <a href="{{ route('initial-setup.template') }}" class="btn btn-sm btn-info text-white">
-                            📥 Descargar Plantilla Excel (.xlsx)
-                        </a>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">2. Sube tu archivo Excel</label>
-                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
-                        <div class="form-text">Formatos permitidos: .xlsx, .xls</div>
-                    </div>
-
-                    <div class="alert alert-info small">
-                        <strong>Nota:</strong> Los SKUs existentes se actualizarán y se creará un movimiento de inventario inicial por cada producto con stock mayor a 0.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Iniciar Importación</button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
 @endsection
 
@@ -257,10 +219,6 @@ function openCashModal() {
 
 function openBanksModal() {
     new bootstrap.Modal(document.getElementById('banksModal')).show();
-}
-
-function openImportModal() {
-    new bootstrap.Modal(document.getElementById('importModal')).show();
 }
 
 function confirmToggleMode(isClosing) {

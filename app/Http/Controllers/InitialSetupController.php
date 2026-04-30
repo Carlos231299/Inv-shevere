@@ -9,8 +9,6 @@ use App\Models\Product;
 use App\Models\Credit;
 use App\Models\AccountPayable;
 use Illuminate\Support\Facades\DB;
-use Shuchkin\SimpleXLSX;
-use Shuchkin\SimpleXLSXGen;
 
 class InitialSetupController extends Controller
 {
@@ -200,100 +198,5 @@ class InitialSetupController extends Controller
         $productsWithStock = \DB::table('products')->where('stock', '>', 0)->count();
 
         return "DEBUG RESULTADO:<br>Lotes antes: $before<br>Lotes después: $after<br>Productos con stock > 0: $productsWithStock<br><br>Si 'Lotes después' es 0, el sistema está limpio.";
-    }
-
-    /**
-     * Import products and initial stock from Excel (XLSX)
-     */
-    public function importProducts(Request $request)
-    {
-        if (!Setting::isInitialMode()) {
-            return back()->with('error', 'El Modo Inicial debe estar activo para importar inventario.');
-        }
-
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls'
-        ]);
-
-        $file = $request->file('file');
-        
-        if ( $xlsx = SimpleXLSX::parse($file->getRealPath()) ) {
-            $rows = $xlsx->rows();
-            $header = array_shift($rows); // Remove header
-            
-            $importedCount = 0;
-            $errorCount = 0;
-
-            DB::beginTransaction();
-            try {
-                foreach ($rows as $data) {
-                    if (count($data) < 5) continue;
-
-                    $name = strtoupper(trim($data[0]));
-                    $sku = strtoupper(trim($data[1]));
-                    $salePrice = (float) $data[2];
-                    $costPrice = (float) $data[3];
-                    $stock = (float) $data[4];
-
-                    if (empty($sku) || empty($name)) {
-                        $errorCount++;
-                        continue;
-                    }
-
-                    // Create or Update Product
-                    $product = Product::updateOrCreate(
-                        ['sku' => $sku],
-                        [
-                            'name' => $name,
-                            'sale_price' => $salePrice,
-                            'cost_price' => $costPrice,
-                            'stock' => $stock,
-                            'measure_type' => 'unit', // Default
-                            'status' => 'active'
-                        ]
-                    );
-
-                    // If stock > 0, create initial movement
-                    if ($stock > 0) {
-                        Movement::create([
-                            'product_sku' => $sku,
-                            'type' => 'input',
-                            'quantity' => $stock,
-                            'description' => 'CARGA INICIAL MASIVA (EXCEL)',
-                            'is_initial' => true,
-                            'cost_at_moment' => $costPrice
-                        ]);
-                    }
-
-                    $importedCount++;
-                }
-                
-                DB::commit();
-                return back()->with('success', "Importación desde Excel completada: $importedCount productos procesados. Errores: $errorCount.");
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return back()->with('error', 'Error durante la importación: ' . $e->getMessage());
-            }
-        } else {
-            return back()->with('error', 'Error al leer el archivo Excel: ' . SimpleXLSX::parseError());
-        }
-    }
-
-    /**
-     * Download XLSX Template
-     */
-    public function downloadTemplate()
-    {
-        $data = [
-            ['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL'],
-            ['PRODUCTO DE EJEMPLO', '123456', 5000, 3500, 10]
-        ];
-
-        $xlsx = SimpleXLSXGen::fromArray($data);
-        
-        return response((string)$xlsx, 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="plantilla_productos_shevere.xlsx"')
-            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }
