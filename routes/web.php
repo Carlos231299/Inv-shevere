@@ -99,6 +99,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('initial-setup/cash', [\App\Http\Controllers\InitialSetupController::class, 'storeCashBalance'])->name('initial-setup.store-cash');
     Route::post('initial-setup/banks', [\App\Http\Controllers\InitialSetupController::class, 'storeBankBases'])->name('initial-setup.store-banks');
     Route::post('/initial-setup/reset', [\App\Http\Controllers\InitialSetupController::class, 'resetDatabase'])->name('initial-setup.reset');
+    Route::post('/initial-setup/import', [\App\Http\Controllers\InitialSetupController::class, 'importProducts'])->name('initial-setup.import');
+    Route::get('/initial-setup/template', [\App\Http\Controllers\InitialSetupController::class, 'downloadTemplate'])->name('initial-setup.template');
     Route::get('/initial-setup/debug', [\App\Http\Controllers\InitialSetupController::class, 'debugCleanup'])->name('initial-setup.debug');
     
     // Inventory Adjustment (Silent)

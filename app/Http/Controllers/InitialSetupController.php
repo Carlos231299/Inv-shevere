@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 use App\Models\Movement;
+use App\Models\Product;
 use App\Models\Credit;
 use App\Models\AccountPayable;
 use Illuminate\Support\Facades\DB;
@@ -197,5 +198,102 @@ class InitialSetupController extends Controller
         $productsWithStock = \DB::table('products')->where('stock', '>', 0)->count();
 
         return "DEBUG RESULTADO:<br>Lotes antes: $before<br>Lotes después: $after<br>Productos con stock > 0: $productsWithStock<br><br>Si 'Lotes después' es 0, el sistema está limpio.";
+    }
+
+    /**
+     * Import products and initial stock from CSV
+     */
+    public function importProducts(Request $request)
+    {
+        if (!Setting::isInitialMode()) {
+            return back()->with('error', 'El Modo Inicial debe estar activo para importar inventario.');
+        }
+
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt'
+        ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+        
+        // Skip header
+        $header = fgetcsv($handle, 1000, ',');
+        
+        $importedCount = 0;
+        $errorCount = 0;
+
+        DB::beginTransaction();
+        try {
+            while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
+                if (count($data) < 5) continue;
+
+                $name = strtoupper(trim($data[0]));
+                $sku = strtoupper(trim($data[1]));
+                $salePrice = (float) $data[2];
+                $costPrice = (float) $data[3];
+                $stock = (float) $data[4];
+
+                if (empty($sku) || empty($name)) {
+                    $errorCount++;
+                    continue;
+                }
+
+                // Create or Update Product
+                $product = Product::updateOrCreate(
+                    ['sku' => $sku],
+                    [
+                        'name' => $name,
+                        'sale_price' => $salePrice,
+                        'cost_price' => $costPrice,
+                        'stock' => $stock,
+                        'measure_type' => 'unit', // Default
+                        'status' => 'active'
+                    ]
+                );
+
+                // If stock > 0, create initial movement
+                if ($stock > 0) {
+                    Movement::create([
+                        'product_sku' => $sku,
+                        'type' => 'input',
+                        'quantity' => $stock,
+                        'description' => 'CARGA INICIAL MASIVA',
+                        'is_initial' => true,
+                        'cost_at_moment' => $costPrice
+                    ]);
+                }
+
+                $importedCount++;
+            }
+            
+            DB::commit();
+            fclose($handle);
+
+            return back()->with('success', "Importación completada: $importedCount productos procesados. Errores: $errorCount.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            fclose($handle);
+            return back()->with('error', 'Error durante la importación: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download CSV Template
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="plantilla_productos_shevere.csv"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL']);
+            fputcsv($file, ['PRODUCTO DE EJEMPLO', '123456', '5000', '3500', '10']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
