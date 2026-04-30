@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\Credit;
 use App\Models\AccountPayable;
 use Illuminate\Support\Facades\DB;
+use Shuchkin\SimpleXLSX;
+use Shuchkin\SimpleXLSXGen;
 
 class InitialSetupController extends Controller
 {
@@ -201,7 +203,7 @@ class InitialSetupController extends Controller
     }
 
     /**
-     * Import products and initial stock from CSV
+     * Import products and initial stock from Excel (XLSX)
      */
     public function importProducts(Request $request)
     {
@@ -210,90 +212,83 @@ class InitialSetupController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt'
+            'file' => 'required|file|mimes:xlsx,xls'
         ]);
 
         $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
         
-        // Skip header
-        $header = fgetcsv($handle, 1000, ',');
-        
-        $importedCount = 0;
-        $errorCount = 0;
-
-        DB::beginTransaction();
-        try {
-            while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
-                if (count($data) < 5) continue;
-
-                $name = strtoupper(trim($data[0]));
-                $sku = strtoupper(trim($data[1]));
-                $salePrice = (float) $data[2];
-                $costPrice = (float) $data[3];
-                $stock = (float) $data[4];
-
-                if (empty($sku) || empty($name)) {
-                    $errorCount++;
-                    continue;
-                }
-
-                // Create or Update Product
-                $product = Product::updateOrCreate(
-                    ['sku' => $sku],
-                    [
-                        'name' => $name,
-                        'sale_price' => $salePrice,
-                        'cost_price' => $costPrice,
-                        'stock' => $stock,
-                        'measure_type' => 'unit', // Default
-                        'status' => 'active'
-                    ]
-                );
-
-                // If stock > 0, create initial movement
-                if ($stock > 0) {
-                    Movement::create([
-                        'product_sku' => $sku,
-                        'type' => 'input',
-                        'quantity' => $stock,
-                        'description' => 'CARGA INICIAL MASIVA',
-                        'is_initial' => true,
-                        'cost_at_moment' => $costPrice
-                    ]);
-                }
-
-                $importedCount++;
-            }
+        if ( $xlsx = SimpleXLSX::parse($file->getRealPath()) ) {
+            $rows = $xlsx->rows();
+            $header = array_shift($rows); // Remove header
             
-            DB::commit();
-            fclose($handle);
+            $importedCount = 0;
+            $errorCount = 0;
 
-            return back()->with('success', "Importación completada: $importedCount productos procesados. Errores: $errorCount.");
-        } catch (\Exception $e) {
-            DB::rollBack();
-            fclose($handle);
-            return back()->with('error', 'Error durante la importación: ' . $e->getMessage());
+            DB::beginTransaction();
+            try {
+                foreach ($rows as $data) {
+                    if (count($data) < 5) continue;
+
+                    $name = strtoupper(trim($data[0]));
+                    $sku = strtoupper(trim($data[1]));
+                    $salePrice = (float) $data[2];
+                    $costPrice = (float) $data[3];
+                    $stock = (float) $data[4];
+
+                    if (empty($sku) || empty($name)) {
+                        $errorCount++;
+                        continue;
+                    }
+
+                    // Create or Update Product
+                    $product = Product::updateOrCreate(
+                        ['sku' => $sku],
+                        [
+                            'name' => $name,
+                            'sale_price' => $salePrice,
+                            'cost_price' => $costPrice,
+                            'stock' => $stock,
+                            'measure_type' => 'unit', // Default
+                            'status' => 'active'
+                        ]
+                    );
+
+                    // If stock > 0, create initial movement
+                    if ($stock > 0) {
+                        Movement::create([
+                            'product_sku' => $sku,
+                            'type' => 'input',
+                            'quantity' => $stock,
+                            'description' => 'CARGA INICIAL MASIVA (EXCEL)',
+                            'is_initial' => true,
+                            'cost_at_moment' => $costPrice
+                        ]);
+                    }
+
+                    $importedCount++;
+                }
+                
+                DB::commit();
+                return back()->with('success', "Importación desde Excel completada: $importedCount productos procesados. Errores: $errorCount.");
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Error durante la importación: ' . $e->getMessage());
+            }
+        } else {
+            return back()->with('error', 'Error al leer el archivo Excel: ' . SimpleXLSX::parseError());
         }
     }
 
     /**
-     * Download CSV Template
+     * Download XLSX Template
      */
     public function downloadTemplate()
     {
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="plantilla_productos_shevere.csv"',
+        $data = [
+            ['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL'],
+            ['PRODUCTO DE EJEMPLO', '123456', 5000, 3500, 10]
         ];
 
-        $callback = function() {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL']);
-            fputcsv($file, ['PRODUCTO DE EJEMPLO', '123456', '5000', '3500', '10']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXLSXGen::fromArray($data)->downloadAs('plantilla_productos_shevere.xlsx');
     }
 }
