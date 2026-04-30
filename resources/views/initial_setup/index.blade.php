@@ -85,6 +85,7 @@
             </div>
         </div>
 
+        {{-- Oculto temporalmente Cuentas por Cobrar y Pagar 
         <!-- Initial Credits -->
         <div class="card">
             <div class="card-body" style="text-align: center;">
@@ -110,6 +111,7 @@
                 @endif
             </div>
         </div>
+        --}}
     </div>
 
     <!-- Instructions -->
