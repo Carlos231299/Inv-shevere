@@ -33,4 +33,5 @@ Thumbs.db
 
 /database/*.sqlite
 !/database/.gitignore
-/pruebas.pem
+*.pem
+invH.pem
