@@ -289,8 +289,11 @@ class InitialSetupController extends Controller
             ['PRODUCTO DE EJEMPLO', '123456', 5000, 3500, 10]
         ];
 
-        if (ob_get_length()) ob_end_clean();
-
-        return SimpleXLSXGen::fromArray($data)->downloadAs('plantilla_productos_shevere.xlsx');
+        $xlsx = SimpleXLSXGen::fromArray($data);
+        
+        return response((string)$xlsx, 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="plantilla_productos_shevere.xlsx"')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }
