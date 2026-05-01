@@ -105,7 +105,7 @@
         <div class="bold" style="font-size: 13px;">{{ \App\Models\Setting::getBusinessName() }}</div>
         <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
         <div style="font-size: 11px;">Dirección: {{ \App\Models\Setting::getBusinessAddress() }}</div>
-        <div class="bold" style="font-size: 11px;">Cel: {{ \App\Models\Setting::getBusinessPhone() }}</div>
+        <div class="bold" style="font-size: 11px;">Domicilios: {{ \App\Models\Setting::getBusinessPhone() }}</div>
         <div class="line"></div>
         <div class="bold">FACTURA DE VENTA #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
         <div>Fecha: {{ $sale->created_at->format('d/m/Y h:i A') }}</div>
