@@ -80,7 +80,10 @@
                 <h6 style="color: #6c757d; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">📦 Productos Iniciales</h6>
                 <h2 style="font-weight: bold; color: #1976d2; margin: 10px 0;">{{ $initialInventoryCount }}</h2>
                 @if($isInitialMode)
-                    <a href="{{ route('purchases.index') }}" class="btn btn-sm btn-primary">Registrar Compra</a>
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('purchases.index') }}" class="btn btn-sm btn-primary">Registrar Compra</a>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openProductImportModal()">📦 Importar Excel</button>
+                    </div>
                 @endif
             </div>
         </div>
@@ -112,6 +115,17 @@
             </div>
         </div>
         --}}
+
+        <!-- Initial Providers -->
+        <div class="card">
+            <div class="card-body" style="text-align: center;">
+                <h6 style="color: #6c757d; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">👤 Proveedores</h6>
+                <h2 style="font-weight: bold; color: #6a1b9a; margin: 10px 0;">{{ \App\Models\Provider::count() }}</h2>
+                @if($isInitialMode)
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openProviderImportModal()">👤 Importar Excel</button>
+                @endif
+            </div>
+        </div>
     </div>
 
     <!-- Instructions -->
@@ -210,6 +224,65 @@
             </form>
         </div>
     </div>
+    <!-- Modal Importar Productos -->
+    <div class="modal fade" id="productImportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form action="{{ route('initial-setup.import-products') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">📦 Importación de Productos (Excel)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">1. Descarga la plantilla</label>
+                        <a href="{{ route('initial-setup.template-products') }}" class="btn btn-sm btn-info text-white d-block">
+                            📥 Plantilla_Productos.xlsx
+                        </a>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">2. Sube tu archivo</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        <div class="form-text">Solo archivos .xlsx o .xls</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Iniciar Importación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Importar Proveedores -->
+    <div class="modal fade" id="providerImportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form action="{{ route('initial-setup.import-providers') }}" method="POST" enctype="multipart/form-data" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">👤 Importación de Proveedores (Excel)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">1. Descarga la plantilla</label>
+                        <a href="{{ route('initial-setup.template-providers') }}" class="btn btn-sm btn-info text-white d-block">
+                            📥 Plantilla_Proveedores.xlsx
+                        </a>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">2. Sube tu archivo</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        <div class="form-text">Solo archivos .xlsx o .xls</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Iniciar Importación</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -221,6 +294,14 @@ function openCashModal() {
 
 function openBanksModal() {
     new bootstrap.Modal(document.getElementById('banksModal')).show();
+}
+
+function openProductImportModal() {
+    new bootstrap.Modal(document.getElementById('productImportModal')).show();
+}
+
+function openProviderImportModal() {
+    new bootstrap.Modal(document.getElementById('providerImportModal')).show();
 }
 
 function confirmToggleMode(isClosing) {

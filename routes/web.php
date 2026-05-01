@@ -99,6 +99,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('initial-setup/cash', [\App\Http\Controllers\InitialSetupController::class, 'storeCashBalance'])->name('initial-setup.store-cash');
     Route::post('initial-setup/banks', [\App\Http\Controllers\InitialSetupController::class, 'storeBankBases'])->name('initial-setup.store-banks');
     Route::post('/initial-setup/reset', [\App\Http\Controllers\InitialSetupController::class, 'resetDatabase'])->name('initial-setup.reset');
+    
+    // Importaciones Excel
+    Route::post('/initial-setup/import-products', [\App\Http\Controllers\InitialSetupController::class, 'importProducts'])->name('initial-setup.import-products');
+    Route::get('/initial-setup/template-products', [\App\Http\Controllers\InitialSetupController::class, 'downloadProductTemplate'])->name('initial-setup.template-products');
+    
+    Route::post('/initial-setup/import-providers', [\App\Http\Controllers\InitialSetupController::class, 'importProviders'])->name('initial-setup.import-providers');
+    Route::get('/initial-setup/template-providers', [\App\Http\Controllers\InitialSetupController::class, 'downloadProviderTemplate'])->name('initial-setup.template-providers');
+
     Route::get('/initial-setup/debug', [\App\Http\Controllers\InitialSetupController::class, 'debugCleanup'])->name('initial-setup.debug');
     
     // Inventory Adjustment (Silent)

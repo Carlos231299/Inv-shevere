@@ -8,7 +8,10 @@ use App\Models\Movement;
 use App\Models\Product;
 use App\Models\Credit;
 use App\Models\AccountPayable;
+use App\Models\Provider;
 use Illuminate\Support\Facades\DB;
+use Shuchkin\SimpleXLSX;
+use Shuchkin\SimpleXLSXGen;
 
 class InitialSetupController extends Controller
 {
@@ -198,5 +201,117 @@ class InitialSetupController extends Controller
         $productsWithStock = \DB::table('products')->where('stock', '>', 0)->count();
 
         return "DEBUG RESULTADO:<br>Lotes antes: $before<br>Lotes después: $after<br>Productos con stock > 0: $productsWithStock<br><br>Si 'Lotes después' es 0, el sistema está limpio.";
+    }
+
+    /**
+     * Import products from Excel
+     */
+    public function importProducts(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:xlsx,xls']);
+        
+        if ($xlsx = SimpleXLSX::parse($request->file('file')->getRealPath())) {
+            $rows = $xlsx->rows();
+            array_shift($rows); // Quitar cabecera
+            
+            DB::beginTransaction();
+            try {
+                $count = 0;
+                foreach ($rows as $r) {
+                    if (empty($r[0]) || empty($r[1])) continue;
+
+                    $product = Product::updateOrCreate(
+                        ['sku' => strtoupper(trim($r[1]))],
+                        [
+                            'name' => strtoupper(trim($r[0])),
+                            'sale_price' => (float)($r[2] ?? 0),
+                            'cost_price' => (float)($r[3] ?? 0),
+                            'stock' => (float)($r[4] ?? 0),
+                            'status' => 'active'
+                        ]
+                    );
+
+                    if ((float)($r[4] ?? 0) > 0) {
+                        Movement::create([
+                            'product_sku' => $product->sku,
+                            'type' => 'input',
+                            'quantity' => (float)$r[4],
+                            'description' => 'CARGA INICIAL EXCEL',
+                            'is_initial' => true,
+                            'cost_at_moment' => $product->cost_price
+                        ]);
+                    }
+                    $count++;
+                }
+                DB::commit();
+                return back()->with('success', "Se cargaron $count productos correctamente.");
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Error en la carga: ' . $e->getMessage());
+            }
+        }
+        return back()->with('error', 'No se pudo leer el archivo Excel.');
+    }
+
+    /**
+     * Import providers from Excel
+     */
+    public function importProviders(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:xlsx,xls']);
+        
+        if ($xlsx = SimpleXLSX::parse($request->file('file')->getRealPath())) {
+            $rows = $xlsx->rows();
+            array_shift($rows); // Quitar cabecera
+            
+            DB::beginTransaction();
+            try {
+                $count = 0;
+                foreach ($rows as $r) {
+                    if (empty($r[0])) continue;
+
+                    Provider::updateOrCreate(
+                        ['nit_cedula' => trim($r[1] ?? '')],
+                        [
+                            'name' => strtoupper(trim($r[0])),
+                            'phone' => trim($r[2] ?? ''),
+                            'address' => trim($r[3] ?? ''),
+                            'email' => trim($r[4] ?? '')
+                        ]
+                    );
+                    $count++;
+                }
+                DB::commit();
+                return back()->with('success', "Se cargaron $count proveedores correctamente.");
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->with('error', 'Error en la carga: ' . $e->getMessage());
+            }
+        }
+        return back()->with('error', 'No se pudo leer el archivo Excel.');
+    }
+
+    public function downloadProductTemplate()
+    {
+        $header = [['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL']];
+        $example = [['PRODUCTO EJEMPLO', '123456', 5000, 3500, 10]];
+        
+        if (ob_get_length()) ob_end_clean();
+        $xlsx = SimpleXLSXGen::fromArray(array_merge($header, $example));
+        return response((string)$xlsx, 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="plantilla_productos.xlsx"');
+    }
+
+    public function downloadProviderTemplate()
+    {
+        $header = [['NOMBRE', 'NIT_CEDULA', 'TELEFONO', 'DIRECCION', 'EMAIL']];
+        $example = [['PROVEEDOR SAS', '900.123.456-7', '3001234567', 'Calle 1 #2-3', 'contacto@empresa.com']];
+        
+        if (ob_get_length()) ob_end_clean();
+        $xlsx = SimpleXLSXGen::fromArray(array_merge($header, $example));
+        return response((string)$xlsx, 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="plantilla_proveedores.xlsx"');
     }
 }
