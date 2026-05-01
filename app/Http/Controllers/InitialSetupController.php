@@ -239,7 +239,8 @@ class InitialSetupController extends Controller
                             'quantity' => (float)$r[4],
                             'description' => 'CARGA INICIAL EXCEL',
                             'is_initial' => true,
-                            'cost_at_moment' => $product->cost_price
+                            'cost_at_moment' => $product->cost_price,
+                            'price_at_moment' => $product->sale_price
                         ]);
                     }
                     $count++;
