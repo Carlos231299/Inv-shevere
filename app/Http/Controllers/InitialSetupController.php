@@ -228,6 +228,7 @@ class InitialSetupController extends Controller
                             'cost_price' => (float)($r[3] ?? 0),
                             'stock' => (float)($r[4] ?? 0),
                             'measure_type' => strtolower(trim($r[5] ?? 'unit')),
+                            'min_stock' => (float)($r[6] ?? 1),
                             'status' => 'active'
                         ]
                     );
@@ -309,8 +310,8 @@ class InitialSetupController extends Controller
 
     public function downloadProductTemplate()
     {
-        $header = [['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL', 'MEDIDA']];
-        $example = [['PRODUCTO EJEMPLO', '123456', 5000, 3500, 10, 'unit']];
+        $header = [['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL', 'MEDIDA', 'STOCK_MINIMO']];
+        $example = [['PRODUCTO EJEMPLO', '123456', 5000, 3500, 10, 'unit', 3]];
         
         if (ob_get_length()) ob_end_clean();
         $xlsx = SimpleXLSXGen::fromArray(array_merge($header, $example));
