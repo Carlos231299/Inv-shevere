@@ -233,6 +233,18 @@ class InitialSetupController extends Controller
                     );
 
                     if ((float)($r[4] ?? 0) > 0) {
+                        // Create initial batch for FIFO stock handling
+                        \App\Models\Batch::create([
+                            'product_sku' => $product->sku,
+                            'batch_number' => 'B-' . strtoupper(trim($r[1])) . '-' . now()->format('YmdHis'),
+                            'purchase_id' => null,
+                            'initial_quantity' => (float)($r[4] ?? 0),
+                            'current_quantity' => (float)($r[4] ?? 0),
+                            'cost_price' => $product->cost_price,
+                            'sale_price' => $product->sale_price,
+                            'status' => 'active'
+                        ]);
+                        // End batch creation
                         Movement::create([
                             'product_sku' => $product->sku,
                             'type' => 'input',
@@ -275,9 +287,9 @@ class InitialSetupController extends Controller
                     if (empty($r[0])) continue;
 
                     Provider::updateOrCreate(
-                        ['nit_cedula' => trim($r[1] ?? '')],
+                        ['name' => strtoupper(trim($r[0]))],
                         [
-                            'name' => strtoupper(trim($r[0])),
+                            'nit' => trim($r[1] ?? ''),
                             'phone' => trim($r[2] ?? ''),
                             'address' => trim($r[3] ?? ''),
                             'email' => trim($r[4] ?? '')
@@ -309,7 +321,7 @@ class InitialSetupController extends Controller
 
     public function downloadProviderTemplate()
     {
-        $header = [['NOMBRE', 'NIT_CEDULA', 'TELEFONO', 'DIRECCION', 'EMAIL']];
+        $header = [['NOMBRE', 'NIT', 'TELEFONO', 'DIRECCION', 'EMAIL']];
         $example = [['PROVEEDOR SAS', '900.123.456-7', '3001234567', 'Calle 1 #2-3', 'contacto@empresa.com']];
         
         if (ob_get_length()) ob_end_clean();
