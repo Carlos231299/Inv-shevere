@@ -13,7 +13,7 @@
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 11.5px;
-            font-weight: 900;
+            font-weight: 700;
             color: #000;
             margin: 20px auto;
             padding: 10px;
@@ -53,7 +53,7 @@
         }
 
         .bold {
-            font-weight: 900;
+            font-weight: 700;
         }
 
         .line {
@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <div style="font-size: 12px; font-weight: 900; margin-bottom: 2px;">{{ \App\Models\Setting::getBusinessName() }}
+        <div style="font-size: 12px; font-weight: 700; margin-bottom: 2px;">{{ \App\Models\Setting::getBusinessName() }}
         </div>
         <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
         <div style="font-size: 11px;">Dirección: {{ \App\Models\Setting::getBusinessAddress() }}</div>
@@ -264,7 +264,7 @@
 
     <div class="text-center" style="margin-top: 20px;">
         <div class="line"></div>
-        <p style="margin: 5px 0; font-weight: 900;">¡GRACIAS POR SU COMPRA!</p>
+        <p style="margin: 5px 0; font-weight: 700;">¡GRACIAS POR SU COMPRA!</p>
         <p style="font-size: 9px; font-weight: normal;">Desarrollado por:</p>
         <p style="font-size: 9px; font-weight: normal;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel -</p>
         <p style="font-size: 9px; font-weight: normal;">304 218 9080 / 300 487 9915</p>

@@ -10,16 +10,17 @@
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
-            width: 80mm;
+            font-family: Arial, Helvetica, sans-serif;
+            width: 76mm;
             margin: 0;
             padding: 5mm;
-            font-size: 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #000;
             line-height: 1.2;
         }
 
         .text-center {
-            text-center: center;
             text-align: center;
         }
 
@@ -28,17 +29,17 @@
         }
 
         .bold {
-            font-weight: bold;
+            font-weight: 700;
         }
 
         .border-top {
-            border-top: 1px dashed #000;
+            border-top: 1.5px solid #000;
             margin-top: 5px;
             padding-top: 5px;
         }
 
         .border-bottom {
-            border-bottom: 1px dashed #000;
+            border-bottom: 1.5px solid #000;
             margin-bottom: 5px;
             padding-bottom: 5px;
         }
