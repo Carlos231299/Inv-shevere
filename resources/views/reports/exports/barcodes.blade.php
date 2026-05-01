@@ -105,9 +105,9 @@
                         $code = (string) $product->sku;
                         // Use Code 128 for reliability
                         $barcode = $generator->getBarcode($code, $generator::TYPE_CODE_128, 2, 45);
-                        echo '<img src="data:image/png;base64,' . base64_encode($barcode) . '" class="barcode-img">';
+                        echo $barcode;
                     } catch (\Exception $e) {
-                        echo '<span style="color:red; font-size:10px;">Error al generar código: ' . $product->sku . '</span>';
+                        echo '<span style="color:red; font-size:10px;">Error al generar código: ' . $product->sku . ' - ' . $e->getMessage() . '</span>';
                     }
                 @endphp
             </div>

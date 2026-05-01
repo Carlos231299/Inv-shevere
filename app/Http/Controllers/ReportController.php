@@ -512,8 +512,8 @@ class ReportController extends Controller
     {
         $products = \App\Models\Product::orderBy('name')->get();
         
-        // We will generate the barcodes in the view using the Generator
-        $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+        // We will generate the barcodes in the view using the HTML Generator (maximum DomPDF compatibility, no GD required)
+        $generator = new \Picqer\Barcode\BarcodeGeneratorHTML();
         
         $pdf = Pdf::loadView('reports.exports.barcodes', compact('products', 'generator'));
         $pdf->setPaper('a4', 'portrait');
