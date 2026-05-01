@@ -257,12 +257,10 @@
     </div>
 
     <script>
-        // Auto-print logic with slight delay to ensure browser readiness
-        window.onload = function () {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        }
+        // Auto-print logic executed immediately at the end of the body
+        setTimeout(function() {
+            window.print();
+        }, 500);
     </script>
 </body>
 
