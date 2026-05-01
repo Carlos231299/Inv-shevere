@@ -97,13 +97,11 @@
 
     <div class="header text-center">
         <!-- Logo Textual Monocromático para Impresora Térmica -->
-        <div
-            style="border: 2px solid #000; padding: 6px; margin: 0 auto 10px auto; display: inline-block; min-width: 60%;">
+        <div style="margin: 0 auto 8px auto; display: inline-block;">
             <div style="font-size: 24px; font-weight: 900; font-family: 'Arial Black', sans-serif; line-height: 1;">
                 <span style="font-size: 28px;">$</span>HEVERE
             </div>
-            <div
-                style="font-size: 7.5px; font-weight: bold; letter-spacing: 0.5px; border-top: 2px solid #000; margin-top: 4px; padding-top: 4px;">
+            <div style="font-size: 7.5px; font-weight: bold; letter-spacing: 0.5px; margin-top: 4px;">
                 HOGAR &middot; CANASTA FAMILIAR &middot; MÁS
             </div>
         </div>
@@ -154,7 +152,8 @@
                     <span style="flex: 1; padding-right: 4px;">{{ $item['name'] }}</span>
                     <span style="white-space: nowrap;">${{ number_format($item['total'], 0) }}</span>
                 </div>
-                <div style="color: #333;">{{ $item['quantity'] }} {{ $item['measure_type'] }} x ${{ number_format($item['price'], 0) }}</div>
+                <div style="color: #333;">{{ $item['quantity'] }} {{ $item['measure_type'] }} x
+                    ${{ number_format($item['price'], 0) }}</div>
             </div>
             @if(!$loop->last)
                 <div style="border-top: 1px dashed #555; margin: 4px 0;"></div>
@@ -262,7 +261,7 @@
         <div class="line"></div>
         <p style="margin: 5px 0; font-weight: 700;">¡GRACIAS POR SU COMPRA!</p>
         <p style="font-size: 9px; font-weight: normal;">Desarrollado por:</p>
-        <p style="font-size: 9px; font-weight: normal;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel -</p>
+        <p style="font-size: 9px; font-weight: normal;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel</p>
         <p style="font-size: 9px; font-weight: normal;">304 218 9080 / 300 487 9915</p>
     </div>
 
