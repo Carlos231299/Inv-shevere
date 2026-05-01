@@ -11,7 +11,7 @@
         "laravel/fortify": "^1.34",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "picqer/php-barcode-generator": "*",
+        "picqer/php-barcode-generator": "^3.2",
         "shuchkin/simplexlsx": "^1.1",
         "shuchkin/simplexlsxgen": "^1.5"
     },
