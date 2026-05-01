@@ -515,6 +515,8 @@ class ReportController extends Controller
         // We will generate the barcodes in the view using the HTML Generator (maximum DomPDF compatibility, no GD required)
         $generator = new \Picqer\Barcode\BarcodeGeneratorHTML();
         
+        $pdf = Pdf::loadView('reports.exports.barcodes', compact('products', 'generator'));
+        
         // Custom size for 80mm thermal printer (80mm = ~226.77 pt)
         // The height is arbitrary (e.g. 1000 pt), DomPDF will create multiple pages if needed
         $pdf->setPaper([0, 0, 226.77, 1000], 'portrait');
