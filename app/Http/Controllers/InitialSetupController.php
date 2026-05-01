@@ -227,6 +227,7 @@ class InitialSetupController extends Controller
                             'sale_price' => (float)($r[2] ?? 0),
                             'cost_price' => (float)($r[3] ?? 0),
                             'stock' => (float)($r[4] ?? 0),
+                            'measure_type' => 'unit',
                             'status' => 'active'
                         ]
                     );
