@@ -257,10 +257,9 @@
     </div>
 
     <script>
-        // Auto-print logic executed immediately at the end of the body
-        setTimeout(function() {
+        window.onload = function() {
             window.print();
-        }, 500);
+        };
     </script>
 </body>
 
