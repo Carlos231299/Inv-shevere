@@ -13,7 +13,7 @@
         body {
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
-            font-weight: normal;
+            font-weight: 600; /* Increased from normal to give more force to regular text */
             color: #000;
             margin: 20px auto;
             padding: 10px;
@@ -53,7 +53,7 @@
         }
 
         .bold {
-            font-weight: 600;
+            font-weight: 900; /* Maximum bold for headers */
         }
 
         .line {
@@ -250,10 +250,10 @@
 
     <div class="text-center" style="margin-top: 20px;">
         <div class="line"></div>
-        <p style="margin: 5px 0; font-weight: 700;">¡GRACIAS POR SU COMPRA!</p>
-        <p style="font-size: 9px; font-weight: normal;">Desarrollado por:</p>
-        <p style="font-size: 9px; font-weight: normal;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel</p>
-        <p style="font-size: 9px; font-weight: normal;">304 218 9080 / 300 487 9915</p>
+        <p style="margin: 5px 0; font-weight: 900;">¡GRACIAS POR SU COMPRA!</p>
+        <p style="font-size: 9px;">Desarrollado por:</p>
+        <p style="font-size: 9px;">Ing. Carlos Bastidas & Ing. Jarlin Esquivel</p>
+        <p style="font-size: 9px;">304 218 9080 / 300 487 9915</p>
     </div>
 
     <script>
