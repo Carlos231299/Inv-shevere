@@ -118,7 +118,7 @@
 
 
         <div class="line"></div>
-        <div class="bold" style="padding: 5px; margin-top: 5px; border: 2px solid #000; text-align: center;">FACTURA DE
+        <div class="bold" style="text-align: center; margin-top: 5px; font-size: 13px;">FACTURA DE
             VENTA #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</div>
         <div style="font-size: 11px; margin-top: 5px;">Fecha: {{ $sale->created_at->format('d/m/Y h:i A') }}</div>
         <div class="bold" style="margin-top: 2px;">Cliente:
@@ -130,41 +130,37 @@
 
     <div class="line"></div>
 
-    <table class="items">
-        <thead>
-            <tr style="text-align: left;">
-                <th colspan="2">Desc.</th>
-                <th class="text-right">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $groupedMovements = $sale->movements->groupBy('product_sku')->map(function ($items) {
-                    return [
-                        'name' => $items->first()->product->name ?? 'Producto Borrado',
-                        'quantity' => $items->sum('quantity'),
-                        'measure_type' => $items->first()->product->measure_type ?? 'Und',
-                        'price' => $items->first()->price_at_moment,
-                        'total' => $items->sum('total')
-                    ];
-                });
-            @endphp
+    <div style="font-size: 10.5px; font-weight: 700;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+            <span>Descripción</span><span>Total</span>
+        </div>
+        <div style="border-top: 1px solid #000; margin-bottom: 4px;"></div>
 
-            @foreach($groupedMovements as $item)
-                <tr>
-                    <td colspan="3">
-                        {{ $item['name'] }}
-                        <br>
-                        {{ $item['quantity'] }} {{ $item['measure_type'] }} x ${{ number_format($item['price'], 0) }}
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2"></td>
-                    <td class="text-right">${{ number_format($item['total'], 0) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @php
+            $groupedMovements = $sale->movements->groupBy('product_sku')->map(function ($items) {
+                return [
+                    'name' => $items->first()->product->name ?? 'Producto Borrado',
+                    'quantity' => $items->sum('quantity'),
+                    'measure_type' => $items->first()->product->measure_type ?? 'Und',
+                    'price' => $items->first()->price_at_moment,
+                    'total' => $items->sum('total')
+                ];
+            });
+        @endphp
+
+        @foreach($groupedMovements as $item)
+            <div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="flex: 1; padding-right: 4px;">{{ $item['name'] }}</span>
+                    <span style="white-space: nowrap;">${{ number_format($item['total'], 0) }}</span>
+                </div>
+                <div style="color: #333;">{{ $item['quantity'] }} {{ $item['measure_type'] }} x ${{ number_format($item['price'], 0) }}</div>
+            </div>
+            @if(!$loop->last)
+                <div style="border-top: 1px dashed #555; margin: 4px 0;"></div>
+            @endif
+        @endforeach
+    </div>
 
     <div class="line"></div>
 
