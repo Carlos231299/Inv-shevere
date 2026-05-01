@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }} - Gestión</title>
+    <title>{{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }} - POS</title>
     <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
     <!-- Google Fonts: Outfit -->

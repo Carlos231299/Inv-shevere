@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Factura de Venta</title>
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
     <style>
         html {
             background: #eee;
