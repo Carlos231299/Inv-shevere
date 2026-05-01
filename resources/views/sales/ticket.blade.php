@@ -14,7 +14,7 @@
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
             font-weight: normal;
-            color: #222;
+            color: #000;
             margin: 20px auto;
             padding: 10px;
             width: 76mm;
@@ -57,7 +57,7 @@
         }
 
         .line {
-            border-top: 1px dashed #222;
+            border-top: 1px dashed #000;
             margin: 5px 0;
         }
 
@@ -96,7 +96,7 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <div style="border: 1.5px solid #222; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
+        <div style="border: 1.5px solid #000; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
             <div style="font-size: 20px; font-weight: 600; letter-spacing: 1px;">$HEVERE</div>
             <div style="font-size: 9px; letter-spacing: 0.5px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
         </div>
@@ -257,8 +257,16 @@
     </div>
 
     <script>
-        window.onload = function() {
-            window.print();
+        // Disparador ultra-seguro para modo Kiosk Printing
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        });
+
+        // Opcional: Cerrar la pestaña automáticamente después de imprimir (muy útil en POS)
+        window.onafterprint = function() {
+            window.close();
         };
     </script>
 </body>
