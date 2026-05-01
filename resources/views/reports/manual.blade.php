@@ -12,90 +12,88 @@
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="section mb-5">
-                <h2 class="h4 text-primary border-bottom pb-2">1. Bienvenido al Sistema</h2>
-                <p>Este manual le guiará a través de las funciones principales de la plataforma diseñada para optimizar la gestión de <b>Carnicería Salomé</b>. El sistema está optimizado para el control preciso de inventarios, ventas rápidas y reportes financieros automáticos.</p>
+                <h2 class="h4 text-primary border-bottom pb-2">📘 1. Bienvenido al Sistema</h2>
+                <p>Este manual le guiará a través del funcionamiento paso a paso del sistema de punto de venta (POS) y gestión de inventario de <b>{{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }}</b>. Está diseñado para reflejar el flujo de trabajo actual, incluyendo la importación unificada, facturación e impresión térmica en modo Kiosk.</p>
+            </div>
+
+            <div class="section mb-5">
+                <h2 class="h4 text-primary border-bottom pb-2">📦 2. Importación Unificada de Inventario (Excel)</h2>
+                <p>El sistema utiliza una <b>Plantilla Unificada</b> (<code>Plantilla_Unificada.xlsx</code>) que hace todo el trabajo pesado por ti. Con un solo archivo, alimentas productos, compras y proveedores.</p>
+                <h3 class="h5 mt-3">¿Cómo funciona la importación?</h3>
+                <ul>
+                    <li>Dirígete a <b>Gestión de Importación</b> en el menú principal.</li>
+                    <li>Haz clic en <b>Descargar Plantilla</b> para obtener el archivo Excel con las columnas correctas.</li>
+                    <li><b>Llenado del Excel:</b>
+                        <ul>
+                            <li><b>Productos:</b> Ingresa SKU, Nombre, Costo, Precio de Venta, Stock Inicial y Stock Mínimo.</li>
+                            <li><b>Proveedores:</b> En las mismas filas del producto, llena los datos del proveedor (Nombre, NIT, Teléfono, Dirección).</li>
+                        </ul>
+                    </li>
+                    <li><b>Sube la plantilla</b> usando el botón <b>Importar Plantilla Unificada</b>.</li>
+                </ul>
+                <div class="alert alert-info border-start border-info border-4 mt-3">
+                    <strong>💡 Magia Automática:</strong> El sistema es inteligente. Si pones el mismo proveedor (Ej. "PROVISIONES EL FUTURO") en 50 filas distintas, el sistema <b>no</b> creará 50 proveedores. Creará <b>solo uno</b>, y meterá todos esos 50 productos dentro de <b>una sola gran compra</b> sumando el costo total de forma automática.
+                </div>
+            </div>
+
+            <div class="section mb-5">
+                <h2 class="h4 text-primary border-bottom pb-2">🏷️ 3. Generación de Códigos de Barras</h2>
+                <p>Si necesitas etiquetar tus productos o tener un catálogo físico en caja para escanear rápido:</p>
+                <ul>
+                    <li>Ve al módulo de <b>Reportes</b> (o Inventario).</li>
+                    <li>Haz clic en el botón para exportar <b>Códigos de Barras</b>.</li>
+                    <li>El sistema generará automáticamente un PDF optimizado para tu <b>impresora térmica (80mm / 76mm)</b>.</li>
+                    <li><b>Diseño de Rollo:</b> Cada producto saldrá en formato de tirilla con su SKU y barras escaneables, listo para que lo imprimas en tu ticketera como una tira continua sin cortes incómodos a los lados.</li>
+                </ul>
+            </div>
+
+            <div class="section mb-5">
+                <h2 class="h4 text-primary border-bottom pb-2">🛒 4. Módulo de Ventas (El Punto de Venta)</h2>
+                <p>El cajero utiliza este módulo para registrar la salida de mercancía.</p>
+                <h3 class="h5 mt-3">Registro de Productos</h3>
+                <ul>
+                    <li><b>Por Escáner:</b> Pasa el código de barras por el lector. El producto se agregará inmediatamente a la lista.</li>
+                    <li><b>Búsqueda Manual:</b> Escribe el nombre o el SKU en la barra superior.</li>
+                </ul>
+                <h3 class="h5 mt-3">Métodos de Pago</h3>
+                <p>Al darle a <b>Procesar Venta</b>, el sistema te permite elegir cómo está pagando el cliente:</p>
+                <ul>
+                    <li><b>Efectivo</b> (Calcula la devuelta/cambio automáticamente y registra el efectivo en caja).</li>
+                    <li><b>Nequi / Bancolombia / Tarjeta / Transferencia</b> (Se registra directamente en los balances digitales).</li>
+                    <li><b>Crédito / Fiado:</b> Te pedirá seleccionar o registrar el cliente al que se le fía.</li>
+                    <li><b>Mixto / Parcial:</b> Por ejemplo, pagan una parte en efectivo y el resto por Nequi; o dejan un abono inicial a una compra de crédito.</li>
+                </ul>
+            </div>
+
+            <div class="section mb-5">
+                <h2 class="h4 text-primary border-bottom pb-2">🖨️ 5. Impresión de Tickets y Modo Kiosk</h2>
+                <p>El ticket de venta se ha optimizado visualmente para no saturar de tinta térmica tu papel, usando un negro nítido de alta visibilidad y separadores en líneas punteadas adaptados para rollos de 80mm.</p>
                 
-                <div class="alert alert-info">
-                    <strong>Conceptos Clave:</strong>
-                    <ul class="mb-0">
-                        <li><b>Lotes (Batches):</b> Cada vez que compra un producto, se crea un "lote". El sistema vende primero los lotes más antiguos (PEPS).</li>
-                        <li><b>SKU/Código:</b> Identificador único (código de barras) de cada producto.</li>
-                        <li><b>Movimientos:</b> Cada venta o compra genera un registro histórico inalterable.</li>
-                    </ul>
+                <h3 class="h5 mt-3">Impresión Automática (Kiosk Mode)</h3>
+                <p>Si utilizas <b>Google Chrome</b> con el acceso directo configurado con <code>--kiosk-printing</code>:</p>
+                <ul>
+                    <li>Al terminar una venta, la pestaña del ticket se abre sola.</li>
+                    <li>Tras 1 segundo exacto (tiempo de seguridad para procesar la información de fondo), <b>Chrome manda la impresión automáticamente sin mostrar ventanas de confirmación</b>.</li>
+                    <li>El ticket sale directo de tu impresora sin interrupciones.</li>
+                </ul>
+                <div class="alert alert-warning border-start border-warning border-4 mt-3">
+                    <strong>⚠️ REGLA DE ORO DEL KIOSK PRINTING:</strong> El sistema envía la impresión a la impresora que tengas marcada como <b>"Predeterminada"</b> en Windows. Asegúrate siempre de que tu impresora térmica POS tenga el chulito verde en el panel de control de Windows, de lo contrario, el sistema enviará los tickets a otra impresora (como "Guardar como PDF") y parecerá que no hace nada.
                 </div>
             </div>
 
             <div class="section mb-5">
-                <h2 class="h4 text-primary border-bottom pb-2">2. Realizar Ventas (POS)</h2>
-                <p>El módulo de ventas (Ventas) es el corazón de la operación diaria. Está diseñado para ser rápido y eficiente.</p>
-                <h3 class="h5">Pasos para vender:</h3>
+                <h2 class="h4 text-primary border-bottom pb-2">📊 6. Cierres y Reportes Diarios</h2>
+                <p>En el <b>Dashboard (Panel Principal)</b>, podrás ver un resumen en tiempo real de tu día:</p>
                 <ul>
-                    <li><b>Búsqueda:</b> Use el lector de códigos de barras en el campo de búsqueda o escriba el nombre/SKU del producto.</li>
-                    <li><b>Cantidades y Precios:</b> Ajuste la cantidad. <span class="badge bg-warning text-dark">¡NUEVO!</span> Ahora puede modificar el <b>Precio de Venta</b> directamente en el recuadro de precio junto a la cantidad. Este cambio solo afecta a la venta actual y no altera el precio original del producto en el inventario.</li>
-                    <li>El sistema soporta formato de moneda con separadores (ej: $1.200,50).</li>
-                    <li><b>Cliente:</b> Seleccione un cliente existente o cree uno nuevo rápidamente desde el buscador (opcional).</li>
-                    <li><b>Cobro:</b> Elija el método de pago. Si selecciona <b>Transferencia (Bancos)</b>, el sistema lo sumará en el reporte de "Bancos" del día.</li>
-                    <li><b>Finalizar:</b> El sistema imprimirá automáticamente la factura térmica si está configurada.</li>
-                </ul>
-                <div class="alert alert-light border-start border-warning border-4">
-                    <b>Tip:</b> Si el cliente paga en efectivo, el sistema le ayudará a calcular el cambio automáticamente.
-                </div>
-            </div>
-
-            <div class="section mb-5">
-                <h2 class="h4 text-primary border-bottom pb-2">3. Gestión de Compras e Inventario</h2>
-                <p>El registro correcto de compras garantiza que su stock siempre esté actualizado y sus márgenes de ganancia sean reales.</p>
-                <h3 class="h5">Entradas de Mercancía:</h3>
-                <ul>
-                    <li>Vaya al módulo <b>"Compras"</b>.</li>
-                    <li>Seleccione el proveedor.</li>
-                    <li>Agregue los productos. Para cada uno podrá definir el <span class="badge bg-secondary">Precio de Costo</span> y el <span class="badge bg-info text-dark">Precio de Venta</span>.</li>
-                    <li>El sistema utiliza el formato estándar colombiano para precios (puntos para miles, coma para decimales). Ej: 2.500,00.</li>
-                    <li>Al guardar, el stock del producto subirá automáticamente.</li>
-                </ul>
-                <h3 class="h5">Inventario:</h3>
-                <ul>
-                    <li>Consulte su stock actual en tiempo real en la pestaña <b>"Inventario"</b>.</li>
-                    <li>Desde allí podrá descargar el <b>Catálogo de Códigos de Barras</b> para etiquetar sus productos.</li>
+                    <li><b>Cierres de Caja:</b> Te separará exactamente cuánto dinero debe haber en físico (efectivo de ventas + base inicial), y cuánto entró por canales digitales (Nequi, Bancolombia, etc.).</li>
+                    <li><b>Deudas (Fiados):</b> Te mostrará cuánto dinero tienes pendiente por cobrar en créditos.</li>
+                    <li><b>Stock Bajo:</b> Te avisará en rojo si un producto bajó del "Stock Mínimo" que configuraste en tu plantilla de Excel, para que pidas a tus proveedores a tiempo.</li>
                 </ul>
             </div>
 
-            <div class="section mb-5">
-                <h2 class="h4 text-primary border-bottom pb-2">4. Reportes Avanzados</h2>
-                <p>El sistema genera datos automáticos para la toma de decisiones financieras.</p>
-                <ul>
-                    <li><b>Arqueo de Caja (Resumen Diario):</b>
-                        <ul>
-                            <li>Descargue el reporte (PDF o Excel) desde el botón azul del Panel de Control.</li>
-                            <li><span class="badge bg-warning text-dark">¡NUEVO!</span> Se añadió una sección de <b>"Bancos / Transferencias"</b> que le dice exactamente cuánto dinero debe tener en sus cuentas bancarias por ventas del día.</li>
-                            <li>El "Total Efectivo en Caja" le dice cuánto dinero físico debe tener en el cajón.</li>
-                        </ul>
-                    </li>
-                    <li><b>Estado de Resultados (Financiero):</b>
-                        <ul>
-                            <li>Genere reportes de rentabilidad por fechas.</li>
-                            <li><span class="badge bg-warning text-dark">¡NUEVO!</span> <b>Comparativa Real vs Esperada:</b>
-                                <ul>
-                                    <li><b>Columna Real:</b> Muestra la ganancia basada en el precio al que <i>realmente</i> vendió (útil si hizo descuentos o cambios de precio manuales).</li>
-                                    <li><b>Columna Esperada:</b> Muestra cuánto <i>debería</i> haber ganado si hubiera vendido todo al precio de lista oficial.</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li><b>Historial de Movimientos:</b> Consulte y reimprima facturas antiguas.</li>
-                </ul>
-            </div>
-
-            <div class="section">
-                <h2 class="h4 text-primary border-bottom pb-2">5. Roles y Seguridad</h2>
-                <ul>
-                    <li><b>Administrador:</b> Acceso total a todos los módulos y configuración financiera.</li>
-                    <li><b>Cajero:</b> Acceso restringido solo al POS de Ventas y consulta de productos. No puede ver costos ni reportes financieros.</li>
-                </ul>
-            </div>
         </div>
         <div class="card-footer text-muted text-center py-3">
-            © {{ date('Y') }} Carnicería Salomé - Plataforma de Gestión de Inventarios.
+            © {{ date('Y') }} {{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }} - Plataforma de Gestión de Inventarios.
         </div>
     </div>
 </div>
