@@ -14,7 +14,7 @@
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
             font-weight: normal;
-            color: #000;
+            color: #222;
             margin: 20px auto;
             padding: 10px;
             width: 76mm;
@@ -53,11 +53,11 @@
         }
 
         .bold {
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .line {
-            border-top: 1px dashed #000;
+            border-top: 1px dashed #222;
             margin: 5px 0;
         }
 
@@ -96,8 +96,8 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <div style="border: 1.5px solid #000; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
-            <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">$HEVERE</div>
+        <div style="border: 1.5px solid #222; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
+            <div style="font-size: 20px; font-weight: 600; letter-spacing: 1px;">$HEVERE</div>
             <div style="font-size: 9px; letter-spacing: 0.5px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
         </div>
         <br>
@@ -257,9 +257,11 @@
     </div>
 
     <script>
-        // Auto-print logic
+        // Auto-print logic with slight delay to ensure browser readiness
         window.onload = function () {
-            window.print();
+            setTimeout(function() {
+                window.print();
+            }, 500);
         }
     </script>
 </body>
