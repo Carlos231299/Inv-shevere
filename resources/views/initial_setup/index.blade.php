@@ -81,8 +81,7 @@
                 <h2 style="font-weight: bold; color: #1976d2; margin: 10px 0;">{{ $initialInventoryCount }}</h2>
                 @if($isInitialMode)
                     <div class="d-grid gap-2">
-                        <a href="{{ route('purchases.index') }}" class="btn btn-sm btn-primary">Registrar Compra</a>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openProductImportModal()">📦 Importar Excel</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="openProductImportModal()">📦 Importar Excel (Prod, Prov y Compras)</button>
                     </div>
                 @endif
             </div>
@@ -122,7 +121,7 @@
                 <h6 style="color: #6c757d; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">👤 Proveedores</h6>
                 <h2 style="font-weight: bold; color: #6a1b9a; margin: 10px 0;">{{ \App\Models\Provider::count() }}</h2>
                 @if($isInitialMode)
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openProviderImportModal()">👤 Importar Excel</button>
+                    <small style="color: #666;">Se importan junto con los productos.</small>
                 @endif
             </div>
         </div>
@@ -230,14 +229,14 @@
             <form action="{{ route('initial-setup.import-products') }}" method="POST" enctype="multipart/form-data" class="modal-content">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">📦 Importación de Productos (Excel)</h5>
+                    <h5 class="modal-title">📦 Importación Masiva (Productos, Proveedores y Compras)</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-4">
-                        <label class="form-label fw-bold">1. Descarga la plantilla</label>
+                        <label class="form-label fw-bold">1. Descarga la plantilla unificada</label>
                         <a href="{{ route('initial-setup.template-products') }}" class="btn btn-sm btn-info text-white d-block">
-                            📥 Plantilla_Productos.xlsx
+                            📥 Plantilla_Unificada.xlsx
                         </a>
                     </div>
                     <div class="mb-3">
@@ -254,35 +253,7 @@
         </div>
     </div>
 
-    <!-- Modal Importar Proveedores -->
-    <div class="modal fade" id="providerImportModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form action="{{ route('initial-setup.import-providers') }}" method="POST" enctype="multipart/form-data" class="modal-content">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">👤 Importación de Proveedores (Excel)</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">1. Descarga la plantilla</label>
-                        <a href="{{ route('initial-setup.template-providers') }}" class="btn btn-sm btn-info text-white d-block">
-                            📥 Plantilla_Proveedores.xlsx
-                        </a>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">2. Sube tu archivo</label>
-                        <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
-                        <div class="form-text">Solo archivos .xlsx o .xls</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Iniciar Importación</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
 </div>
 @endsection
 
