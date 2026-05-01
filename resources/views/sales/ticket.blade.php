@@ -96,8 +96,9 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo Shevere" style="width: 35mm; height: auto; margin-bottom: 4px;">
-        <div class="bold" style="font-size: 14px;">{{ \App\Models\Setting::getBusinessName() }}</div>
+        <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">SHEVERE</div>
+        <div style="font-size: 9px; letter-spacing: 0.5px; margin-bottom: 4px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
+        <div class="bold" style="font-size: 13px;">{{ \App\Models\Setting::getBusinessName() }}</div>
         <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
         <div style="font-size: 11px;">Dirección: {{ \App\Models\Setting::getBusinessAddress() }}</div>
         <div class="bold" style="font-size: 11px;">Cel: {{ \App\Models\Setting::getBusinessPhone() }}</div>
