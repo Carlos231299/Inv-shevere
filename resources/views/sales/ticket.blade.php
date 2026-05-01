@@ -96,8 +96,12 @@
     <button class="btn-print no-print" onclick="window.print()">🖨️ IMPRIMIR</button>
 
     <div class="header text-center">
-        <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">SHEVERE</div>
-        <div style="font-size: 9px; letter-spacing: 0.5px; margin-bottom: 4px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
+        <div style="border: 1.5px solid #000; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
+            <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">SHEVERE</div>
+            <div style="font-size: 9px; letter-spacing: 0.5px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
+        </div>
+        <br>
+        <br>
         <div class="bold" style="font-size: 13px;">{{ \App\Models\Setting::getBusinessName() }}</div>
         <div style="font-size: 11px;">NIT: {{ \App\Models\Setting::getBusinessNit() }}</div>
         <div style="font-size: 11px;">Dirección: {{ \App\Models\Setting::getBusinessAddress() }}</div>
