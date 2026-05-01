@@ -217,6 +217,8 @@ class InitialSetupController extends Controller
             DB::beginTransaction();
             try {
                 $count = 0;
+                $purchases = []; // To group purchases by provider during this import
+                
                 foreach ($rows as $r) {
                     if (empty($r[0]) || empty($r[1])) continue;
 
@@ -234,11 +236,38 @@ class InitialSetupController extends Controller
                     );
 
                     if ((float)($r[4] ?? 0) > 0) {
+                        $purchaseId = null;
+                        
+                        // Handle Provider and Purchase if Provider Name is given
+                        if (!empty(trim($r[8] ?? ''))) {
+                            $provider = \App\Models\Provider::updateOrCreate(
+                                ['name' => strtoupper(trim($r[8]))],
+                                [
+                                    'nit' => trim($r[7] ?? ''),
+                                    'phone' => trim($r[9] ?? ''),
+                                    'address' => trim($r[10] ?? ''),
+                                    'email' => trim($r[11] ?? '')
+                                ]
+                            );
+                            
+                            if (!isset($purchases[$provider->id])) {
+                                $purchases[$provider->id] = \App\Models\Purchase::create([
+                                    'provider_id' => $provider->id,
+                                    'user_id' => auth()->id(),
+                                    'total_amount' => 0
+                                ]);
+                            }
+                            $purchase = $purchases[$provider->id];
+                            $purchase->total_amount += ((float)$r[4] * (float)$r[3]); // stock * cost
+                            $purchase->save();
+                            $purchaseId = $purchase->id;
+                        }
+
                         // Create initial batch for FIFO stock handling
                         \App\Models\Batch::create([
                             'product_sku' => $product->sku,
                             'batch_number' => 'B-' . strtoupper(trim($r[1])) . '-' . now()->format('YmdHis'),
-                            'purchase_id' => null,
+                            'purchase_id' => $purchaseId,
                             'initial_quantity' => (float)($r[4] ?? 0),
                             'current_quantity' => (float)($r[4] ?? 0),
                             'cost_price' => $product->cost_price,
@@ -255,7 +284,8 @@ class InitialSetupController extends Controller
                             'cost_at_moment' => $product->cost_price,
                             'price_at_moment' => $product->sale_price,
                             'total' => (float)$r[4] * $product->sale_price,
-                            'user_id' => auth()->id()
+                            'user_id' => auth()->id(),
+                            'purchase_id' => $purchaseId
                         ]);
                     }
                     $count++;
@@ -310,8 +340,8 @@ class InitialSetupController extends Controller
 
     public function downloadProductTemplate()
     {
-        $header = [['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL', 'MEDIDA', 'STOCK_MINIMO']];
-        $example = [['PRODUCTO EJEMPLO', '123456', 5000, 3500, 10, 'unit', 3]];
+        $header = [['NOMBRE', 'SKU', 'PRECIO_VENTA', 'COSTO', 'STOCK_INICIAL', 'MEDIDA', 'STOCK_MINIMO', 'NIT_PROVEEDOR', 'NOMBRE_PROVEEDOR', 'TELEFONO_PROVEEDOR', 'DIRECCION_PROVEEDOR', 'EMAIL_PROVEEDOR']];
+        $example = [['PRODUCTO EJEMPLO', '123456', 5000, 3500, 10, 'unit', 3, '900123456', 'PROVEEDOR DE EJEMPLO SAS', '3001234567', 'CALLE 1 # 2-3', 'contacto@proveedor.com']];
         
         if (ob_get_length()) ob_end_clean();
         $xlsx = SimpleXLSXGen::fromArray(array_merge($header, $example));
