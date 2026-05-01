@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Catálogo de Productos (codigos de barras)- Carnicería Salomé</title>
+    <title>Catálogo de Códigos de Barras - {{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }}</title>
     <style>
         @page {
             margin: 1cm;
@@ -87,8 +87,8 @@
 </head>
 <body>
     <div class="header">
-        <h2>Catálogo de Productos (codigos de barras)</h2>
-        <p>Carnicería Salomé | Fecha de Emisión: {{ date('d/m/Y h:i A') }}</p>
+        <h2>Catálogo de Códigos de Barras</h2>
+        <p>{{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }} | Fecha de Emisión: {{ date('d/m/Y h:i A') }}</p>
     </div>
 
     <div class="catalog-container">
@@ -116,7 +116,7 @@
     </div>
 
     <div class="footer">
-        Sistema de Inventario Carnicería Salomé &copy; {{ date('Y') }} - Generado Automáticamente
+        Sistema de Inventario {{ \App\Models\Setting::getBusinessName() ?? 'SHEVERE' }} &copy; {{ date('Y') }} - Generado Automáticamente
     </div>
 </body>
 </html>
