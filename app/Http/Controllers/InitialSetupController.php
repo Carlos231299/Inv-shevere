@@ -240,7 +240,7 @@ class InitialSetupController extends Controller
                         
                         // Handle Provider and Purchase if Provider Name is given
                         if (!empty(trim($r[8] ?? ''))) {
-                            $provider = \App\Models\Provider::updateOrCreate(
+                            $provider = Provider::updateOrCreate(
                                 ['name' => strtoupper(trim($r[8]))],
                                 [
                                     'nit' => trim($r[7] ?? ''),
@@ -347,7 +347,7 @@ class InitialSetupController extends Controller
         $xlsx = SimpleXLSXGen::fromArray(array_merge($header, $example));
         return response((string)$xlsx, 200)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="plantilla_productos.xlsx"');
+            ->header('Content-Disposition', 'attachment; filename="Plantilla_Unificada.xlsx"');
     }
 
     public function downloadProviderTemplate()
