@@ -97,7 +97,7 @@
 
     <div class="header text-center">
         <div style="border: 1.5px solid #000; display: inline-block; padding: 4px 12px; margin-bottom: 6px;">
-            <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">SHEVERE</div>
+            <div style="font-size: 20px; font-weight: bold; letter-spacing: 1px;">$HEVERE</div>
             <div style="font-size: 9px; letter-spacing: 0.5px;">HOGAR &middot; CANASTA FAMILIAR &middot; MÁS</div>
         </div>
         <br>
