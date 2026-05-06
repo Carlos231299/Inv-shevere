@@ -212,7 +212,7 @@
 
                             <div class="d-flex flex-column gap-3">
                                 <div class="d-flex justify-content-between border-bottom border-primary border-opacity-25 pb-2">
-                                    <span class="text-muted small">Saldo Inicial (Ayer)</span>
+                                    <span class="text-muted small">Saldo Inicial (Base Apertura)</span>
                                     <span class="fw-bold text-secondary">$ {{ number_format($previousDayBalance, 0, ',', '.') }}</span>
                                 </div>
                                 

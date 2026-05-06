@@ -137,24 +137,14 @@ class DashboardController extends Controller
         $nequiBalance = $baseNequi + $incomeNequiToday + $adjEntryNequi - ($outgoNequiToday + $adjExitNequi);
         $bancolombiaBalance = $baseBancolombia + $incomeBancolombiaToday + $adjEntryBancolombia - ($outgoBancolombiaToday + $adjExitBancolombia);
 
-        // 9. HISTORY (For Previous Day Balance calculation)
-        $totalCashIncomeHistory = Movement::where('type', 'sale')->where('is_initial', false)->where('payment_method', 'cash')->where('created_at', '<=', $resetCashAt)->whereDate('created_at', '<', $today)->sum('total') 
-            + CreditPayment::where('payment_method', 'cash')->where('created_at', '<=', $resetCashAt)->whereDate('created_at', '<', $today)->sum('amount')
-            + SalePayment::whereHas('sale', function($q) use ($resetCashAt, $today) {
-                $q->where('payment_method', 'mixed')->where('created_at', '<=', $resetCashAt)->whereDate('created_at', '<', $today);
-            })->where('payment_method', 'cash')->sum('amount');
-        
-        $totalCashOutgoHistory = Expense::where('payment_method', 'cash')->where('expense_date', '<=', $resetCashAt)->whereDate('expense_date', '<', $today)->sum('amount') 
-            + Movement::where('type', 'purchase')->where('is_initial', false)->where('payment_method', 'cash')->where('created_at', '<=', $resetCashAt)->whereDate('created_at', '<', $today)->sum('total') 
-            + \App\Models\AccountPayablePayment::where('payment_method', 'cash')->where('payment_date', '<=', $resetCashAt)->whereDate('payment_date', '<', $today)->sum('amount');
+        // 9. FINAL BALANCES (Clean session-based approach)
+        $previousDayBalance = $initialCash; // For the dashboard, "Previous Balance" is the base we opened with today
 
-        $previousDayBalance = $initialCash + $totalCashIncomeHistory - $totalCashOutgoHistory;
-
-        // 10. CURRENT CASH TOTAL
+        // 10. CURRENT CASH TOTAL (Session Base + Session Movements)
         $totalCashIncomeAll = $salesTodayCash + $collectedReceivablesToday + $adjEntryCash;
         $totalCashOutgoAll = $expensesTodayCash + $cashPurchases + $paidPayablesCash + $adjExitCash;
         $totalCash = $initialCash + $totalCashIncomeAll - $totalCashOutgoAll;
-        $cashInBoxToday = $totalCash - $previousDayBalance;
+        $cashInBoxToday = $totalCash - $previousDayBalance; // Net cash change today
 
         // 11. Net Profit & Other Stats
         $costToday = $movementsToday = Movement::where('type', 'sale')->where('is_initial', false)->where('created_at', '>', $resetCashAt)->with('product')->get()->reduce(function ($carry, $mov) {
