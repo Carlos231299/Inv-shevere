@@ -214,6 +214,95 @@ class CashRegisterController extends Controller
     {
         $register = CashRegister::with('user')->findOrFail($id);
         $adjustments = \App\Models\CashAdjustment::where('cash_register_id', $id)->get();
-        return view('cash_registers.ticket', compact('register', 'adjustments'));
+
+        $openedAt = $register->opened_at;
+        $closedAt = $register->closed_at ?? now();
+        $methodsBancolombia = ['bancolombia', 'bank', 'transfer'];
+
+        // ---- EFECTIVO ----
+        $cash_income = Movement::where('type', 'sale')->where('is_initial', false)
+                ->where('payment_method', 'cash')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\SalePayment::whereHas('sale', fn($q) => $q->where('payment_method', 'mixed')->whereBetween('created_at', [$openedAt, $closedAt]))
+                ->where('payment_method', 'cash')->sum('amount')
+            + \App\Models\CreditPayment::where('payment_method', 'cash')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $cash_outgo = Movement::where('type', 'purchase')->where('is_initial', false)
+                ->where('payment_method', 'cash')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\Expense::where('payment_method', 'cash')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount')
+            + \App\Models\AccountPayablePayment::where('payment_method', 'cash')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $cash_adj_entry = $adjustments->where('type', 'entry')->where('payment_method', 'cash')->sum('amount');
+        $cash_adj_exit  = $adjustments->where('type', 'exit')->where('payment_method', 'cash')->sum('amount');
+
+        // ---- NEQUI ----
+        $nequi_income = Movement::where('type', 'sale')->where('is_initial', false)
+                ->where('payment_method', 'nequi')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\SalePayment::whereHas('sale', fn($q) => $q->where('payment_method', 'mixed')->whereBetween('created_at', [$openedAt, $closedAt]))
+                ->where('payment_method', 'nequi')->sum('amount')
+            + \App\Models\CreditPayment::where('payment_method', 'nequi')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $nequi_outgo = Movement::where('type', 'purchase')->where('is_initial', false)
+                ->where('payment_method', 'nequi')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\Expense::where('payment_method', 'nequi')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount')
+            + \App\Models\AccountPayablePayment::where('payment_method', 'nequi')
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $nequi_adj_entry = $adjustments->where('type', 'entry')->where('payment_method', 'nequi')->sum('amount');
+        $nequi_adj_exit  = $adjustments->where('type', 'exit')->where('payment_method', 'nequi')->sum('amount');
+
+        // ---- BANCOLOMBIA ----
+        $banc_income = Movement::where('type', 'sale')->where('is_initial', false)
+                ->whereIn('payment_method', $methodsBancolombia)
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\SalePayment::whereHas('sale', fn($q) => $q->where('payment_method', 'mixed')->whereBetween('created_at', [$openedAt, $closedAt]))
+                ->whereIn('payment_method', $methodsBancolombia)->sum('amount')
+            + \App\Models\CreditPayment::whereIn('payment_method', $methodsBancolombia)
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $banc_outgo = Movement::where('type', 'purchase')->where('is_initial', false)
+                ->whereIn('payment_method', $methodsBancolombia)
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('total')
+            + \App\Models\Expense::whereIn('payment_method', $methodsBancolombia)
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount')
+            + \App\Models\AccountPayablePayment::whereIn('payment_method', $methodsBancolombia)
+                ->whereBetween('created_at', [$openedAt, $closedAt])->sum('amount');
+
+        $banc_adj_entry = $adjustments->where('type', 'entry')->whereIn('payment_method', $methodsBancolombia)->sum('amount');
+        $banc_adj_exit  = $adjustments->where('type', 'exit')->whereIn('payment_method', $methodsBancolombia)->sum('amount');
+
+        $breakdown = [
+            'cash' => [
+                'initial'    => $register->initial_cash,
+                'income'     => $cash_income,
+                'outgo'      => $cash_outgo,
+                'adj_entry'  => $cash_adj_entry,
+                'adj_exit'   => $cash_adj_exit,
+            ],
+            'nequi' => [
+                'initial'    => $register->initial_nequi,
+                'income'     => $nequi_income,
+                'outgo'      => $nequi_outgo,
+                'adj_entry'  => $nequi_adj_entry,
+                'adj_exit'   => $nequi_adj_exit,
+            ],
+            'bancolombia' => [
+                'initial'    => $register->initial_bancolombia,
+                'income'     => $banc_income,
+                'outgo'      => $banc_outgo,
+                'adj_entry'  => $banc_adj_entry,
+                'adj_exit'   => $banc_adj_exit,
+            ],
+        ];
+
+        return view('cash_registers.ticket', compact('register', 'adjustments', 'breakdown'));
     }
 }

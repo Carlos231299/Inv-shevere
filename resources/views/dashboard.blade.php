@@ -217,20 +217,32 @@
                                 </div>
                                 
                                 <div class="d-flex justify-content-between text-success">
-                                    <span class="small">(+) Total Entradas Efectivo</span>
-                                    <!-- Sales Cash + Collections Cash -->
+                                    <span class="small">(+) Total Ventas/Recaudos</span>
                                     <span class="fw-bold">$ {{ number_format($salesTodayCash, 0, ',', '.') }}</span>
                                 </div>
-                                <div class="d-flex justify-content-between text-danger border-bottom border-primary border-opacity-25 pb-2">
-                                    <span class="small">(-) Total Salidas Efectivo</span>
-                                    <!-- Expenses + Purchases Cash + Payables Cash -->
+                                @if($adjEntryCash > 0)
+                                <div class="d-flex justify-content-between text-success">
+                                    <span class="small">(+) Entradas Manuales</span>
+                                    <span class="fw-bold">$ {{ number_format($adjEntryCash, 0, ',', '.') }}</span>
+                                </div>
+                                @endif
+                                <div class="d-flex justify-content-between text-danger">
+                                    <span class="small">(-) Total Gastos/Compras</span>
                                     <span class="fw-bold">- $ {{ number_format($expensesTodayCash + $cashPurchases + $paidPayablesCash, 0, ',', '.') }}</span>
                                 </div>
+                                @if($adjExitCash > 0)
+                                <div class="d-flex justify-content-between text-danger border-bottom border-primary border-opacity-25 pb-2">
+                                    <span class="small">(-) Salidas Manuales (Retiros)</span>
+                                    <span class="fw-bold">- $ {{ number_format($adjExitCash, 0, ',', '.') }}</span>
+                                </div>
+                                @else
+                                <div class="border-bottom border-primary border-opacity-25 pb-2"></div>
+                                @endif
 
                                 <div class="alert alert-primary mb-0 mt-2 text-center shadow-sm" style="border: none; background: #e3f2fd; color: #0d47a1;">
                                     <div class="small text-uppercase fw-bold opacity-75">Dinero en Caja</div>
                                     <div class="display-6 fw-bold my-1">
-                                        $ {{ number_format($previousDayBalance + $salesTodayCash - ($expensesTodayCash + $cashPurchases + $paidPayablesCash), 0, ',', '.') }}
+                                        $ {{ number_format($totalCash, 0, ',', '.') }}
                                     </div>
                                     <small class="d-block mt-1 opacity-75">Debe coincidir con tu dinero físico</small>
                                 </div>
@@ -482,12 +494,7 @@
     }
 
     function showCloseBoxModal() {
-        // Fetch System Totals First
-        Swal.fire({
-            title: 'Cargando totales...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
+        Swal.fire({ title: 'Cargando totales...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
 
         fetch('{{ route("cash-registers.totals") }}')
             .then(res => res.json())
@@ -499,41 +506,94 @@
 
                 Swal.fire({
                     title: '🔒 Cuadre y Cierre de Caja',
-                    width: '600px',
+                    width: '680px',
                     html: `
-                        <div class="alert alert-info text-start mb-3" style="font-size:0.9rem;">
-                            Ingrese el dinero físico que tiene actualmente en su poder.
+                        <div class="alert alert-info text-start mb-3" style="font-size:0.85rem;padding:10px 14px;">
+                            💡 Los campos <strong>"Físico"</strong> ya tienen el valor calculado por el sistema (Diferencia = $0).<br>
+                            Modifícalos solo si el dinero contado difiere. La diferencia se actualiza en tiempo real.
                         </div>
-                        <div class="row text-start align-items-center mb-3">
-                            <div class="col-4 fw-bold">Efectivo</div>
-                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_cash)}</div>
-                            <div class="col-4"><input type="number" id="close-cash" class="form-control form-control-sm" placeholder="Físico"></div>
-                        </div>
-                        <div class="row text-start align-items-center mb-3">
-                            <div class="col-4 fw-bold">Nequi</div>
-                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_nequi)}</div>
-                            <div class="col-4"><input type="number" id="close-nequi" class="form-control form-control-sm" placeholder="Físico"></div>
-                        </div>
-                        <div class="row text-start align-items-center mb-3">
-                            <div class="col-4 fw-bold">Bancolombia</div>
-                            <div class="col-4 text-muted small">Sistema: $ ${new Intl.NumberFormat('es-CO').format(data.system_bancolombia)}</div>
-                            <div class="col-4"><input type="number" id="close-bancolombia" class="form-control form-control-sm" placeholder="Físico"></div>
-                        </div>
-                        <div class="text-start mt-3">
-                            <label class="form-label">Notas / Novedades:</label>
+                        <table class="table table-sm table-bordered text-start mb-3" style="font-size:0.88rem;">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width:28%">Método</th>
+                                    <th class="text-end" style="width:24%">💻 Sistema</th>
+                                    <th class="text-end" style="width:28%">👁️ Físico (editable)</th>
+                                    <th class="text-end" style="width:20%">± Diferencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold align-middle">💵 Efectivo</td>
+                                    <td class="text-end text-success fw-bold align-middle" id="sys-cash-label">$ ${new Intl.NumberFormat('es-CO').format(data.system_cash)}</td>
+                                    <td class="text-end">
+                                        <input type="number" id="close-cash" class="form-control form-control-sm text-end"
+                                            value="${data.system_cash}" min="0"
+                                            oninput="updateDiff('cash', ${data.system_cash})">
+                                    </td>
+                                    <td class="text-end align-middle" id="diff-cash"><span class="badge bg-success">✓ $0</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold align-middle">📱 Nequi</td>
+                                    <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_nequi)}</td>
+                                    <td class="text-end">
+                                        <input type="number" id="close-nequi" class="form-control form-control-sm text-end"
+                                            value="${data.system_nequi}" min="0"
+                                            oninput="updateDiff('nequi', ${data.system_nequi})">
+                                    </td>
+                                    <td class="text-end align-middle" id="diff-nequi"><span class="badge bg-success">✓ $0</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold align-middle">🏦 Bancolombia</td>
+                                    <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_bancolombia)}</td>
+                                    <td class="text-end">
+                                        <input type="number" id="close-bancolombia" class="form-control form-control-sm text-end"
+                                            value="${data.system_bancolombia}" min="0"
+                                            oninput="updateDiff('bancolombia', ${data.system_bancolombia})">
+                                    </td>
+                                    <td class="text-end align-middle" id="diff-bancolombia"><span class="badge bg-success">✓ $0</span></td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="4" class="text-muted text-start" style="font-size:0.78rem;padding:6px 8px;">
+                                        🟢 Verde = cuadrado &nbsp;|&nbsp; 🟡 Amarillo = sobrante &nbsp;|&nbsp; 🔴 Rojo = faltante
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="text-start mt-2">
+                            <label class="form-label fw-bold">📝 Notas / Novedades:</label>
                             <textarea id="close-notes" class="form-control" rows="2" placeholder="Opcional..."></textarea>
                         </div>
                         <div class="form-check text-start mt-3">
                             <input class="form-check-input" type="checkbox" id="close-withdraw" checked>
-                            <label class="form-check-input-label fw-bold text-danger" for="close-withdraw">
-                                🏦 Retirar efectivo a Caja Fuerte (El panel quedará en $0)
+                            <label class="form-check-label fw-bold text-danger" for="close-withdraw">
+                                🏦 Retirar efectivo a Caja Fuerte al cierre (si ya retiraste el efectivo, pon Físico en $0)
                             </label>
                         </div>
                     `,
                     showCancelButton: true,
-                    confirmButtonText: 'Cerrar Caja e Imprimir',
+                    confirmButtonText: '✅ Cerrar Caja e Imprimir',
                     cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#dc3545',
+                    didOpen: () => {
+                        window.updateDiff = function(method, systemVal) {
+                            const input = document.getElementById('close-' + method);
+                            const diffCell = document.getElementById('diff-' + method);
+                            const physical = parseFloat(input.value) || 0;
+                            const diff = physical - systemVal;
+                            const fmt = new Intl.NumberFormat('es-CO').format(Math.abs(diff));
+                            let badge;
+                            if (Math.abs(diff) < 1) {
+                                badge = `<span class="badge bg-success">✓ $0</span>`;
+                            } else if (diff > 0) {
+                                badge = `<span class="badge bg-warning text-dark">+$ ${fmt} sobrante</span>`;
+                            } else {
+                                badge = `<span class="badge bg-danger">-$ ${fmt} faltante</span>`;
+                            }
+                            diffCell.innerHTML = badge;
+                        };
+                    },
                     preConfirm: () => {
                         return {
                             physical_cash: document.getElementById('close-cash').value || 0,
@@ -547,10 +607,7 @@
                     if (result.isConfirmed) {
                         fetch('{{ route("cash-registers.close") }}', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                             body: JSON.stringify(result.value)
                         })
                         .then(res => res.json())

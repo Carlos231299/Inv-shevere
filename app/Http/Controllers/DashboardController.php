@@ -100,14 +100,14 @@ class DashboardController extends Controller
         $incomeBancolombiaToday = $salesTodayBancolombia + $paymentsTodayBancolombia;
 
         // 5. Outgoes (Expenses, Purchases, Payables)
-        $expensesTodayCash = Expense::where('payment_method', 'cash')->where('expense_date', '>', $resetCashAt)->sum('amount');
-        $expensesTodayNequi = Expense::where('payment_method', 'nequi')->where('expense_date', '>', $resetNequiAt)->sum('amount');
-        $expensesTodayBancolombia = Expense::whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('expense_date', '>', $resetBancolombiaAt)->sum('amount');
+        $expensesTodayCash = Expense::where('payment_method', 'cash')->where('created_at', '>', $resetCashAt)->sum('amount');
+        $expensesTodayNequi = Expense::where('payment_method', 'nequi')->where('created_at', '>', $resetNequiAt)->sum('amount');
+        $expensesTodayBancolombia = Expense::whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('created_at', '>', $resetBancolombiaAt)->sum('amount');
         $expensesDay = $expensesTodayCash + $expensesTodayNequi + $expensesTodayBancolombia;
 
-        $paidPayablesCash = \App\Models\AccountPayablePayment::where('payment_method', 'cash')->where('payment_date', '>', $resetCashAt)->sum('amount');
-        $paidPayablesNequi = \App\Models\AccountPayablePayment::where('payment_method', 'nequi')->where('payment_date', '>', $resetNequiAt)->sum('amount');
-        $paidPayablesBancolombia = \App\Models\AccountPayablePayment::whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('payment_date', '>', $resetBancolombiaAt)->sum('amount');
+        $paidPayablesCash = \App\Models\AccountPayablePayment::where('payment_method', 'cash')->where('created_at', '>', $resetCashAt)->sum('amount');
+        $paidPayablesNequi = \App\Models\AccountPayablePayment::where('payment_method', 'nequi')->where('created_at', '>', $resetNequiAt)->sum('amount');
+        $paidPayablesBancolombia = \App\Models\AccountPayablePayment::whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('created_at', '>', $resetBancolombiaAt)->sum('amount');
         $paidPayablesToday = $paidPayablesCash + $paidPayablesNequi + $paidPayablesBancolombia;
 
         $cashPurchases = Movement::where('type', 'purchase')->where('is_initial', false)->where('payment_method', 'cash')->where('created_at', '>', $resetCashAt)->sum('total');
@@ -141,7 +141,7 @@ class DashboardController extends Controller
         $previousDayBalance = $initialCash; // For the dashboard, "Previous Balance" is the base we opened with today
 
         // 10. CURRENT CASH TOTAL (Session Base + Session Movements)
-        $totalCashIncomeAll = $salesTodayCash + $collectedReceivablesToday + $adjEntryCash;
+        $totalCashIncomeAll = $salesTodayCash + $adjEntryCash;
         $totalCashOutgoAll = $expensesTodayCash + $cashPurchases + $paidPayablesCash + $adjExitCash;
         $totalCash = $initialCash + $totalCashIncomeAll - $totalCashOutgoAll;
         $cashInBoxToday = $totalCash - $previousDayBalance; // Net cash change today
@@ -180,7 +180,8 @@ class DashboardController extends Controller
             'paidPayablesToday', 'collectedReceivablesToday', 'totalCash', 'nequiBalance', 'bancolombiaBalance', 'activeRegister',
             'incomeNequiToday', 'incomeBancolombiaToday', 'salesTodayNequi', 'salesTodayBancolombia', 'baseNequi', 'baseBancolombia',
             'expensesTodayCash', 'expensesTodayNequi', 'expensesTodayBancolombia', 'paidPayablesCash', 'paidPayablesNequi', 'paidPayablesBancolombia',
-            'cashSales', 'paymentsToday', 'cashPurchases', 'nequiPurchases', 'bancolombiaPurchases', 'creditPurchases', 'cashPaymentsPaid'
+            'cashSales', 'paymentsToday', 'cashPurchases', 'nequiPurchases', 'bancolombiaPurchases', 'creditPurchases', 'cashPaymentsPaid',
+            'adjEntryCash', 'adjExitCash', 'adjEntryNequi', 'adjExitNequi', 'adjEntryBancolombia', 'adjExitBancolombia'
         ));
     }
 }
