@@ -46,49 +46,52 @@ class DashboardController extends Controller
             $baseBancolombia = 0;
         }
 
-        // 2. Sales Today Breakdown (Calculated AFTER reset point)
-        $directCashToday = Movement::where('type', 'sale')
-            ->where('is_initial', false)
+        // 2. Sales Today Breakdown (Refactored to use Payments and Credits for discount accuracy)
+        
+        // A. Cash Inflow from Sales (Direct + Mixed + Deposits for new credits)
+        $salesTodayCash = SalePayment::whereHas('sale', function($q) use ($resetCashAt) {
+                $q->where('created_at', '>', $resetCashAt);
+            })
             ->where('payment_method', 'cash')
-            ->where('created_at', '>', $resetCashAt)
-            ->sum('total');
-            
-        $paymentsTodayCash = CreditPayment::where('payment_method', 'cash')
-            ->where('created_at', '>', $resetCashAt)
-            ->sum('amount');
-
-        $mixedCashToday = SalePayment::whereHas('sale', function($q) use ($resetCashAt) {
-                $q->where('created_at', '>', $resetCashAt)
-                  ->where('payment_method', 'mixed');
+            ->sum('amount') 
+            + CreditPayment::whereHas('credit.sale', function($q) use ($resetCashAt) {
+                $q->where('created_at', '>', $resetCashAt);
             })
             ->where('payment_method', 'cash')
             ->sum('amount');
 
-        $salesTodayCash = $directCashToday + $paymentsTodayCash + $mixedCashToday;
+        // B. Nequi Inflow from Sales
+        $salesTodayNequi = SalePayment::whereHas('sale', function($q) use ($resetNequiAt) {
+                $q->where('created_at', '>', $resetNequiAt);
+            })
+            ->where('payment_method', 'nequi')
+            ->sum('amount')
+            + CreditPayment::whereHas('credit.sale', function($q) use ($resetNequiAt) {
+                $q->where('created_at', '>', $resetNequiAt);
+            })
+            ->where('payment_method', 'nequi')
+            ->sum('amount');
 
-        $mixedNequiToday = SalePayment::whereHas('sale', function($q) use ($resetNequiAt) {
-            $q->where('created_at', '>', $resetNequiAt)->where('payment_method', 'mixed');
-        })->where('payment_method', 'nequi')->sum('amount');
+        // C. Bancolombia/Bank Inflow from Sales
+        $salesTodayBancolombia = SalePayment::whereHas('sale', function($q) use ($resetBancolombiaAt) {
+                $q->where('created_at', '>', $resetBancolombiaAt);
+            })
+            ->whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])
+            ->sum('amount')
+            + CreditPayment::whereHas('credit.sale', function($q) use ($resetBancolombiaAt) {
+                $q->where('created_at', '>', $resetBancolombiaAt);
+            })
+            ->whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])
+            ->sum('amount');
 
-        $salesTodayNequi = Movement::where('type', 'sale')->where('is_initial', false)
-            ->where('payment_method', 'nequi')->where('created_at', '>', $resetNequiAt)->sum('total') 
-            + $mixedNequiToday;
+        // D. Credit (Pending Balance for sales created today)
+        $salesTodayCredit = Credit::whereHas('sale', function($q) use ($resetCashAt) {
+                $q->where('created_at', '>', $resetCashAt);
+            })
+            ->sum(DB::raw('total_debt - paid_amount'));
 
-        $mixedBancolombiaToday = SalePayment::whereHas('sale', function($q) use ($resetBancolombiaAt) {
-            $q->where('created_at', '>', $resetBancolombiaAt)->where('payment_method', 'mixed');
-        })->whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->sum('amount');
-
-        $salesTodayBancolombia = Movement::where('type', 'sale')->where('is_initial', false)
-            ->whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('created_at', '>', $resetBancolombiaAt)->sum('total') 
-            + $mixedBancolombiaToday;
-
-        $salesTodayCredit = Movement::where('type', 'sale')
-            ->where('is_initial', false)
-            ->where('payment_method', 'credit')
-            ->where('created_at', '>', $resetCashAt)
-            ->sum('total');
-
-        $salesToday = $salesTodayCash + $salesTodayNequi + $salesTodayBancolombia + $salesTodayCredit;
+        // Total Sales Today (Correctly accounts for discounts)
+        $salesToday = \App\Models\Sale::where('created_at', '>', $resetCashAt)->sum('total_amount');
 
         // 3. Payments Received Today (Abonos)
         $paymentsTodayNequi = CreditPayment::where('payment_method', 'nequi')->where('created_at', '>', $resetNequiAt)->sum('amount');
@@ -140,11 +143,22 @@ class DashboardController extends Controller
         // 9. FINAL BALANCES (Clean session-based approach)
         $previousDayBalance = $initialCash; // For the dashboard, "Previous Balance" is the base we opened with today
 
-        // 10. CURRENT CASH TOTAL (Session Base + Session Movements)
-        $totalCashIncomeAll = $salesTodayCash + $collectedReceivablesToday + $adjEntryCash;
+        // 10. CURRENT CASH TOTAL (Arqueo de Caja)
+        // We calculate total cash inflow and outflow to determine the current balance.
+        // salesTodayCash already includes SalePayment(cash) + CreditPayment(cash for new sales)
+        // To avoid double counting when adding collectedReceivablesToday (which is ALL CreditPayments),
+        // we calculate a clean "Total Cash Inflow" for the box.
+        
+        $allCashSalePayments = SalePayment::where('payment_method', 'cash')
+            ->where('created_at', '>', $resetCashAt)->sum('amount');
+        $allCashCreditPayments = CreditPayment::where('payment_method', 'cash')
+            ->where('created_at', '>', $resetCashAt)->sum('amount');
+            
+        $totalCashIncomeAll = $allCashSalePayments + $allCashCreditPayments + $adjEntryCash;
         $totalCashOutgoAll = $expensesTodayCash + $cashPurchases + $paidPayablesCash + $adjExitCash;
+        
         $totalCash = $initialCash + $totalCashIncomeAll - $totalCashOutgoAll;
-        $cashInBoxToday = $totalCash - $previousDayBalance; // Net cash change today
+        $cashInBoxToday = $totalCash - $previousDayBalance; // Net change in cash session
 
         // 11. Net Profit & Other Stats
         $costToday = $movementsToday = Movement::where('type', 'sale')->where('is_initial', false)->where('created_at', '>', $resetCashAt)->with('product')->get()->reduce(function ($carry, $mov) {
@@ -166,8 +180,15 @@ class DashboardController extends Controller
         }
 
         // Compatibility variables for view
-        $cashSales = $directCashToday + $mixedCashToday;
-        $paymentsToday = $paymentsTodayCash;
+        $cashSales = SalePayment::whereHas('sale', function($q) use ($resetCashAt) {
+                $q->where('created_at', '>', $resetCashAt);
+            })
+            ->where('payment_method', 'cash')
+            ->sum('amount');
+
+        $paymentsToday = CreditPayment::where('payment_method', 'cash')
+            ->where('created_at', '>', $resetCashAt)
+            ->sum('amount');
         $cashPurchases = Movement::where('type', 'purchase')->where('is_initial', false)->where('payment_method', 'cash')->where('created_at', '>', $resetCashAt)->sum('total');
         $nequiPurchases = Movement::where('type', 'purchase')->where('is_initial', false)->where('payment_method', 'nequi')->where('created_at', '>', $resetNequiAt)->sum('total');
         $bancolombiaPurchases = Movement::where('type', 'purchase')->where('is_initial', false)->whereIn('payment_method', ['bancolombia', 'bank', 'transfer'])->where('created_at', '>', $resetBancolombiaAt)->sum('total');
@@ -180,7 +201,8 @@ class DashboardController extends Controller
             'paidPayablesToday', 'collectedReceivablesToday', 'totalCash', 'nequiBalance', 'bancolombiaBalance', 'activeRegister',
             'incomeNequiToday', 'incomeBancolombiaToday', 'salesTodayNequi', 'salesTodayBancolombia', 'baseNequi', 'baseBancolombia',
             'expensesTodayCash', 'expensesTodayNequi', 'expensesTodayBancolombia', 'paidPayablesCash', 'paidPayablesNequi', 'paidPayablesBancolombia',
-            'cashSales', 'paymentsToday', 'cashPurchases', 'nequiPurchases', 'bancolombiaPurchases', 'creditPurchases', 'cashPaymentsPaid'
+            'cashSales', 'paymentsToday', 'cashPurchases', 'nequiPurchases', 'bancolombiaPurchases', 'creditPurchases', 'cashPaymentsPaid',
+            'totalCashIncomeAll', 'totalCashOutgoAll', 'adjEntryCash', 'adjExitCash'
         ));
     }
 }

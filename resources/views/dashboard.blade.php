@@ -217,20 +217,18 @@
                                 </div>
                                 
                                 <div class="d-flex justify-content-between text-success">
-                                    <span class="small">(+) Total Entradas Efectivo</span>
-                                    <!-- Sales Cash + Collections Cash -->
-                                    <span class="fw-bold">$ {{ number_format($salesTodayCash, 0, ',', '.') }}</span>
+                                    <span class="small">(+) Entradas (Ventas + Abonos + Entradas)</span>
+                                    <span class="fw-bold">$ {{ number_format($totalCashIncomeAll, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between text-danger border-bottom border-primary border-opacity-25 pb-2">
-                                    <span class="small">(-) Total Salidas Efectivo</span>
-                                    <!-- Expenses + Purchases Cash + Payables Cash -->
-                                    <span class="fw-bold">- $ {{ number_format($expensesTodayCash + $cashPurchases + $paidPayablesCash, 0, ',', '.') }}</span>
+                                    <span class="small">(-) Salidas (Gastos + Compras + Salidas)</span>
+                                    <span class="fw-bold">- $ {{ number_format($totalCashOutgoAll, 0, ',', '.') }}</span>
                                 </div>
 
                                 <div class="alert alert-primary mb-0 mt-2 text-center shadow-sm" style="border: none; background: #e3f2fd; color: #0d47a1;">
                                     <div class="small text-uppercase fw-bold opacity-75">Dinero en Caja</div>
                                     <div class="display-6 fw-bold my-1">
-                                        $ {{ number_format($previousDayBalance + $salesTodayCash - ($expensesTodayCash + $cashPurchases + $paidPayablesCash), 0, ',', '.') }}
+                                        $ {{ number_format($totalCash, 0, ',', '.') }}
                                     </div>
                                     <small class="d-block mt-1 opacity-75">Debe coincidir con tu dinero físico</small>
                                 </div>

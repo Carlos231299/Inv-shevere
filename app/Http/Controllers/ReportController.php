@@ -32,12 +32,8 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         // 1. REAL Data (What actually happened)
-        $salesMovements = Movement::where('type', 'sale')
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->with('product')
-            ->get();
-
-        $totalRealSales = $salesMovements->sum('total');
+        $totalRealSales = \App\Models\Sale::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('total_amount');
 
         // 2. EXPECTED Data (Based on average/list price)
         $totalExpectedSales = $salesMovements->reduce(function ($carry, $movement) {
@@ -127,9 +123,11 @@ class ReportController extends Controller
         // 2. Period Data (Rango seleccionado) -> Componentes de la fórmula solicitada:
         // ($previousDayBalance + $cashSales + $paymentsToday - $expensesToday - $cashPurchases - $cashPaymentsPaid)
         
-        $cashSales = \App\Models\Movement::where('type', 'sale')
-            ->where('payment_method', 'cash')->where('is_initial', false)
-            ->whereBetween('created_at', [$startStr, $endStr])->sum('total');
+        $cashSales = \App\Models\SalePayment::whereHas('sale', function($q) use ($startStr, $endStr) {
+                $q->whereBetween('created_at', [$startStr, $endStr]);
+            })
+            ->where('payment_method', 'cash')
+            ->sum('amount');
 
         $paymentsToday = \App\Models\CreditPayment::where('payment_method', 'cash')
             ->whereBetween('created_at', [$startStr, $endStr])->sum('amount');
@@ -248,10 +246,8 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         // Re-calculate data
-        $salesMovements = Movement::where('type', 'sale')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->with('product')->get();
-        
-        // 1. REAL Data (What actually happened)
-        $totalRealSales = $salesMovements->sum('total');
+        $totalRealSales = \App\Models\Sale::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('total_amount');
         
         // 2. EXPECTED Data (Based on average/list price)
         $totalExpectedSales = $salesMovements->reduce(function ($carry, $movement) {
@@ -462,10 +458,8 @@ class ReportController extends Controller
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         // Re-calculate data
-        $salesMovements = Movement::where('type', 'sale')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->with('product')->get();
-        
-        // 1. REAL Data
-        $totalRealSales = $salesMovements->sum('total');
+        $totalRealSales = \App\Models\Sale::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->sum('total_amount');
 
         // 2. EXPECTED Data
         $totalExpectedSales = $salesMovements->reduce(function ($carry, $movement) {
@@ -616,22 +610,14 @@ class ReportController extends Controller
         $previousDayBalance = $initialCash + $historyIncome - $historyOutgo;
 
         // Cash breakdown
-        // OLD: $cashSales = $allMovementsToday->where('type', 'sale')->where('payment_method', 'cash')->sum('total');
-        // NEW: Sum from SalePayment where sale was created today
         $salesTodayIds = \App\Models\Sale::whereDate('created_at', $today)->pluck('id');
         $cashSales = \App\Models\SalePayment::whereIn('sale_id', $salesTodayIds)->where('payment_method', 'cash')->sum('amount');
-        
-        // Also add legacy cash sales if migration hasn't run? 
-        // Better to rely on migration script to fill SalePayment. 
-        // However, we can add a fallback: if no SalePayments found for a paid sale, look at movement?
-        // Let's stick to the plan: Migration script will be mandatory.
         
         $cashPurchases = $allMovementsToday->where('type', 'purchase')->where('payment_method', 'cash')->sum('total');
         $cashPaymentsReceived = $paymentsTodayList->where('payment_method', 'cash')->sum('amount'); // CreditPayments
         $cashPaymentsPaid = $purchasePaymentsTodayList->where('payment_method', 'cash')->sum('amount');
         
         // Bank breakdown
-        // OLD: $bankSales = $allMovementsToday->where('type', 'sale')->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('total');
         $bankSales = \App\Models\SalePayment::whereIn('sale_id', $salesTodayIds)->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('amount');
 
         $bankPaymentsReceived = $paymentsTodayList->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('amount');
@@ -744,16 +730,13 @@ class ReportController extends Controller
             ->where('is_initial', false)
             ->get();
         
-        $totalSales = $allMovementsToday->where('type', 'sale')->sum('total');
+        $totalSales = \App\Models\Sale::whereIn('id', $salesTodayIds)->sum('total_amount');
         $expensesToday = $expensesTodayList->where('payment_method', 'cash')->sum('amount');
         
         // Income components for Cash Balance
-        // Income components for Cash Balance
-        $salesTodayIds = \App\Models\Sale::whereDate('created_at', $today->toDateString())->pluck('id');
-        
         $cashSales = \App\Models\SalePayment::whereIn('sale_id', $salesTodayIds)->where('payment_method', 'cash')->sum('amount');
         $transferSales = \App\Models\SalePayment::whereIn('sale_id', $salesTodayIds)->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('amount');
-        $creditSales = $allMovementsToday->where('type', 'sale')->where('payment_method', 'credit')->sum('total'); // Keep using movements for credit TOTAL
+        $creditSales = \App\Models\Credit::whereIn('sale_id', $salesTodayIds)->sum(DB::raw('total_debt - paid_amount'));
         
         $paymentsTodayReceived = $paymentsTodayList->where('payment_method', 'cash')->sum('amount');
         $bankPaymentsReceived = $paymentsTodayList->whereIn('payment_method', ['nequi', 'bancolombia'])->sum('amount');
