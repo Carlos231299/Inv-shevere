@@ -273,7 +273,6 @@
                                         <div class="small text-uppercase fw-bold opacity-75">Dinero en Caja</div>
                                         <div class="display-6 fw-bold my-1">
                                             $ {{ number_format($totalCash, 0, ',', '.') }}
-                                            $ {{ number_format($totalCash, 0, ',', '.') }}
                                         </div>
                                         <small class="d-block mt-1 opacity-75">Debe coincidir con tu dinero físico</small>
                                     </div>
@@ -312,7 +311,8 @@
                                 <div class="mb-1 text-success">Entradas Hoy: +$ {{ number_format($incomeNequiToday, 0) }}
                                 </div>
                                 <div class="text-danger">Salidas Hoy: -$
-                                    {{ number_format($paidPayablesNequi + $expensesTodayNequi + $nequiPurchases, 0) }}</div>
+                                    {{ number_format($paidPayablesNequi + $expensesTodayNequi + $nequiPurchases, 0) }}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -342,7 +342,8 @@
                                 <div class="mb-1">Base: <span class="fw-bold">$
                                         {{ number_format($baseBancolombia, 0) }}</span></div>
                                 <div class="mb-1 text-success">Entradas Hoy: +$
-                                    {{ number_format($incomeBancolombiaToday, 0) }}</div>
+                                    {{ number_format($incomeBancolombiaToday, 0) }}
+                                </div>
                                 <div class="text-danger">Salidas Hoy: -$
                                     {{ number_format($paidPayablesBancolombia + $expensesTodayBancolombia + $bancolombiaPurchases, 0) }}
                                 </div>
@@ -380,12 +381,12 @@
                 Swal.fire({
                     title: 'Resumen del Día',
                     html: `
-                        <div class="mb-3 text-start">
-                            <label class="form-label"><b>Seleccione la fecha:</b></label>
-                            <input type="date" id="swal-date" class="form-control" value="{{ date('Y-m-d') }}">
-                        </div>
-                        <p>¿En qué formato deseas descargar el resumen de esa fecha?</p>
-                    `,
+                                <div class="mb-3 text-start">
+                                    <label class="form-label"><b>Seleccione la fecha:</b></label>
+                                    <input type="date" id="swal-date" class="form-control" value="{{ date('Y-m-d') }}">
+                                </div>
+                                <p>¿En qué formato deseas descargar el resumen de esa fecha?</p>
+                            `,
                     icon: 'question',
                     showCancelButton: true,
                     showDenyButton: true,
@@ -414,29 +415,29 @@
                     title: '🔓 Apertura de Caja',
                     width: '500px',
                     html: `
-                        <div class="alert alert-info small text-start">Ingrese los saldos iniciales (bases) para el día de hoy.</div>
-                        <div class="text-start mb-3">
-                            <label class="form-label fw-bold">Efectivo en Caja (Base):</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
-                                <input type="number" id="open-cash" class="form-control" placeholder="0" min="0">
-                            </div>
-                        </div>
-                        <div class="text-start mb-3">
-                            <label class="form-label fw-bold">Saldo Inicial Nequi:</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
-                                <input type="number" id="open-nequi" class="form-control" placeholder="0" min="0">
-                            </div>
-                        </div>
-                        <div class="text-start mb-3">
-                            <label class="form-label fw-bold">Saldo Inicial Bancolombia:</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
-                                <input type="number" id="open-bancolombia" class="form-control" placeholder="0" min="0">
-                            </div>
-                        </div>
-                    `,
+                                <div class="alert alert-info small text-start">Ingrese los saldos iniciales (bases) para el día de hoy.</div>
+                                <div class="text-start mb-3">
+                                    <label class="form-label fw-bold">Efectivo en Caja (Base):</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">$</span>
+                                        <input type="number" id="open-cash" class="form-control" placeholder="0" min="0">
+                                    </div>
+                                </div>
+                                <div class="text-start mb-3">
+                                    <label class="form-label fw-bold">Saldo Inicial Nequi:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">$</span>
+                                        <input type="number" id="open-nequi" class="form-control" placeholder="0" min="0">
+                                    </div>
+                                </div>
+                                <div class="text-start mb-3">
+                                    <label class="form-label fw-bold">Saldo Inicial Bancolombia:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">$</span>
+                                        <input type="number" id="open-bancolombia" class="form-control" placeholder="0" min="0">
+                                    </div>
+                                </div>
+                            `,
                     showCancelButton: true,
                     confirmButtonText: 'Abrir Caja',
                     cancelButtonText: 'Cancelar',
@@ -484,26 +485,26 @@
                 Swal.fire({
                     title: title,
                     html: `
-                        <div class="text-start mb-3">
-                            <label class="form-label fw-bold">Monto:</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light">$</span>
-                                <input type="number" id="adj-amount" class="form-control" placeholder="0" min="0.01">
-                            </div>
-                        </div>
-                        <div class="text-start mb-3">
-                            <label class="form-label fw-bold">Método de Pago:</label>
-                            <select id="adj-method" class="form-select">
-                                <option value="cash">Efectivo</option>
-                                <option value="nequi">Nequi</option>
-                                <option value="bancolombia">Bancolombia</option>
-                            </select>
-                        </div>
-                        <div class="text-start">
-                            <label class="form-label fw-bold">Descripción / Motivo:</label>
-                            <input type="text" id="adj-description" class="form-control" placeholder="Ej: Pago factura luz, Inyección de capital...">
-                        </div>
-                    `,
+                                <div class="text-start mb-3">
+                                    <label class="form-label fw-bold">Monto:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light">$</span>
+                                        <input type="number" id="adj-amount" class="form-control" placeholder="0" min="0.01">
+                                    </div>
+                                </div>
+                                <div class="text-start mb-3">
+                                    <label class="form-label fw-bold">Método de Pago:</label>
+                                    <select id="adj-method" class="form-select">
+                                        <option value="cash">Efectivo</option>
+                                        <option value="nequi">Nequi</option>
+                                        <option value="bancolombia">Bancolombia</option>
+                                    </select>
+                                </div>
+                                <div class="text-start">
+                                    <label class="form-label fw-bold">Descripción / Motivo:</label>
+                                    <input type="text" id="adj-description" class="form-control" placeholder="Ej: Pago factura luz, Inyección de capital...">
+                                </div>
+                            `,
                     showCancelButton: true,
                     confirmButtonText: 'Registrar',
                     cancelButtonText: 'Cancelar',
@@ -555,70 +556,70 @@
                             title: '🔒 Cuadre y Cierre de Caja',
                             width: '680px',
                             html: `
-                                <div class="alert alert-info text-start mb-3" style="font-size:0.85rem;padding:10px 14px;">
-                                    💡 Los campos <strong>"Físico"</strong> ya tienen el valor calculado por el sistema (Diferencia = $0).<br>
-                                    Modifícalos solo si el dinero contado difiere. La diferencia se actualiza en tiempo real.
-                                </div>
-                                <table class="table table-sm table-bordered text-start mb-3" style="font-size:0.88rem;">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th style="width:28%">Método</th>
-                                            <th class="text-end" style="width:24%">💻 Sistema</th>
-                                            <th class="text-end" style="width:28%">👁️ Físico (editable)</th>
-                                            <th class="text-end" style="width:20%">± Diferencia</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold align-middle">💵 Efectivo</td>
-                                            <td class="text-end text-success fw-bold align-middle" id="sys-cash-label">$ ${new Intl.NumberFormat('es-CO').format(data.system_cash)}</td>
-                                            <td class="text-end">
-                                                <input type="number" id="close-cash" class="form-control form-control-sm text-end"
-                                                    value="${data.system_cash}" min="0"
-                                                    oninput="updateDiff('cash', ${data.system_cash})">
-                                            </td>
-                                            <td class="text-end align-middle" id="diff-cash"><span class="badge bg-success">✓ $0</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold align-middle">📱 Nequi</td>
-                                            <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_nequi)}</td>
-                                            <td class="text-end">
-                                                <input type="number" id="close-nequi" class="form-control form-control-sm text-end"
-                                                    value="${data.system_nequi}" min="0"
-                                                    oninput="updateDiff('nequi', ${data.system_nequi})">
-                                            </td>
-                                            <td class="text-end align-middle" id="diff-nequi"><span class="badge bg-success">✓ $0</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold align-middle">🏦 Bancolombia</td>
-                                            <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_bancolombia)}</td>
-                                            <td class="text-end">
-                                                <input type="number" id="close-bancolombia" class="form-control form-control-sm text-end"
-                                                    value="${data.system_bancolombia}" min="0"
-                                                    oninput="updateDiff('bancolombia', ${data.system_bancolombia})">
-                                            </td>
-                                            <td class="text-end align-middle" id="diff-bancolombia"><span class="badge bg-success">✓ $0</span></td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot class="table-light">
-                                        <tr>
-                                            <td colspan="4" class="text-muted text-start" style="font-size:0.78rem;padding:6px 8px;">
-                                                🟢 Verde = cuadrado &nbsp;|&nbsp; 🟡 Amarillo = sobrante &nbsp;|&nbsp; 🔴 Rojo = faltante
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                                <div class="text-start mt-2">
-                                    <label class="form-label fw-bold">📝 Notas / Novedades:</label>
-                                    <textarea id="close-notes" class="form-control" rows="2" placeholder="Opcional..."></textarea>
-                                </div>
-                                <div class="form-check text-start mt-3">
-                                    <input class="form-check-input" type="checkbox" id="close-withdraw" checked>
-                                    <label class="form-check-label fw-bold text-danger" for="close-withdraw">
-                                        🏦 Retirar efectivo a Caja Fuerte al cierre (si ya retiraste el efectivo, pon Físico en $0)
-                                    </label>
-                                </div>
-                            `,
+                                        <div class="alert alert-info text-start mb-3" style="font-size:0.85rem;padding:10px 14px;">
+                                            💡 Los campos <strong>"Físico"</strong> ya tienen el valor calculado por el sistema (Diferencia = $0).<br>
+                                            Modifícalos solo si el dinero contado difiere. La diferencia se actualiza en tiempo real.
+                                        </div>
+                                        <table class="table table-sm table-bordered text-start mb-3" style="font-size:0.88rem;">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th style="width:28%">Método</th>
+                                                    <th class="text-end" style="width:24%">💻 Sistema</th>
+                                                    <th class="text-end" style="width:28%">👁️ Físico (editable)</th>
+                                                    <th class="text-end" style="width:20%">± Diferencia</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="fw-bold align-middle">💵 Efectivo</td>
+                                                    <td class="text-end text-success fw-bold align-middle" id="sys-cash-label">$ ${new Intl.NumberFormat('es-CO').format(data.system_cash)}</td>
+                                                    <td class="text-end">
+                                                        <input type="number" id="close-cash" class="form-control form-control-sm text-end"
+                                                            value="${data.system_cash}" min="0"
+                                                            oninput="updateDiff('cash', ${data.system_cash})">
+                                                    </td>
+                                                    <td class="text-end align-middle" id="diff-cash"><span class="badge bg-success">✓ $0</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold align-middle">📱 Nequi</td>
+                                                    <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_nequi)}</td>
+                                                    <td class="text-end">
+                                                        <input type="number" id="close-nequi" class="form-control form-control-sm text-end"
+                                                            value="${data.system_nequi}" min="0"
+                                                            oninput="updateDiff('nequi', ${data.system_nequi})">
+                                                    </td>
+                                                    <td class="text-end align-middle" id="diff-nequi"><span class="badge bg-success">✓ $0</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold align-middle">🏦 Bancolombia</td>
+                                                    <td class="text-end text-success fw-bold align-middle">$ ${new Intl.NumberFormat('es-CO').format(data.system_bancolombia)}</td>
+                                                    <td class="text-end">
+                                                        <input type="number" id="close-bancolombia" class="form-control form-control-sm text-end"
+                                                            value="${data.system_bancolombia}" min="0"
+                                                            oninput="updateDiff('bancolombia', ${data.system_bancolombia})">
+                                                    </td>
+                                                    <td class="text-end align-middle" id="diff-bancolombia"><span class="badge bg-success">✓ $0</span></td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot class="table-light">
+                                                <tr>
+                                                    <td colspan="4" class="text-muted text-start" style="font-size:0.78rem;padding:6px 8px;">
+                                                        🟢 Verde = cuadrado &nbsp;|&nbsp; 🟡 Amarillo = sobrante &nbsp;|&nbsp; 🔴 Rojo = faltante
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                        <div class="text-start mt-2">
+                                            <label class="form-label fw-bold">📝 Notas / Novedades:</label>
+                                            <textarea id="close-notes" class="form-control" rows="2" placeholder="Opcional..."></textarea>
+                                        </div>
+                                        <div class="form-check text-start mt-3">
+                                            <input class="form-check-input" type="checkbox" id="close-withdraw" checked>
+                                            <label class="form-check-label fw-bold text-danger" for="close-withdraw">
+                                                🏦 Retirar efectivo a Caja Fuerte al cierre (si ya retiraste el efectivo, pon Físico en $0)
+                                            </label>
+                                        </div>
+                                    `,
                             showCancelButton: true,
                             confirmButtonText: '✅ Cerrar Caja e Imprimir',
                             cancelButtonText: 'Cancelar',
@@ -687,26 +688,26 @@
                 if (lowStockCount > 0 && !hideAlert) {
                     // Build simple HTML table
                     let tableHtml = `
-                        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
-                            <table style="width:100%; text-align: left; border-collapse: collapse; font-size: 0.9rem;">
-                                <thead style="position: sticky; top: 0; background: #f8f9fa;">
-                                    <tr>
-                                        <th style="padding: 8px; border-bottom: 1px solid #ddd;">Producto</th>
-                                        <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Stock</th>
-                                        <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Mín</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
+                                <div style="max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
+                                    <table style="width:100%; text-align: left; border-collapse: collapse; font-size: 0.9rem;">
+                                        <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                                            <tr>
+                                                <th style="padding: 8px; border-bottom: 1px solid #ddd;">Producto</th>
+                                                <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Stock</th>
+                                                <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">Mín</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
 
                     lowStockProducts.forEach(p => {
                         tableHtml += `
-                            <tr>
-                                <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0;">${p.name}</td>
-                                <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #d32f2f; font-weight: bold;">${p.stock}</td>
-                                <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #777;">${p.min_stock}</td>
-                            </tr>
-                        `;
+                                    <tr>
+                                        <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0;">${p.name}</td>
+                                        <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #d32f2f; font-weight: bold;">${p.stock}</td>
+                                        <td style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; color: #777;">${p.min_stock}</td>
+                                    </tr>
+                                `;
                     });
 
                     tableHtml += `</tbody></table></div>`;
