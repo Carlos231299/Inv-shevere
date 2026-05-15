@@ -890,9 +890,10 @@ export default function Sale() {
                                             className="form-control form-control-sm"
                                             value={p.method}
                                             onChange={e => {
-                                                const newPayments = [...payments];
-                                                newPayments[idx].method = e.target.value;
-                                                setPayments(newPayments);
+                                                // ✅ Immutable update — React detects the change correctly
+                                                setPayments(payments.map((pay, i) =>
+                                                    i === idx ? { ...pay, method: e.target.value } : pay
+                                                ));
                                             }}
                                             style={{ flex: 1 }}
                                         >
@@ -906,15 +907,15 @@ export default function Sale() {
                                             placeholder="Monto"
                                             value={p.amount}
                                             onChange={e => {
-                                                const newPayments = [...payments];
-                                                newPayments[idx].amount = parseFloat(e.target.value);
-                                                setPayments(newPayments);
+                                                // ✅ Immutable update — React detects the change correctly
+                                                setPayments(payments.map((pay, i) =>
+                                                    i === idx ? { ...pay, amount: parseFloat(e.target.value) || 0 } : pay
+                                                ));
                                             }}
                                             style={{ width: '100px' }}
                                         />
                                         <button className="btn btn-sm btn-outline-danger" onClick={() => {
-                                            const newPayments = payments.filter((_, i) => i !== idx);
-                                            setPayments(newPayments);
+                                            setPayments(payments.filter((_, i) => i !== idx));
                                         }}>×</button>
                                     </div>
                                 ))}
@@ -922,7 +923,10 @@ export default function Sale() {
                                     <button className="btn btn-sm btn-link" onClick={() => {
                                         const currentSum = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
                                         const remaining = Math.max(0, totalTotal - currentSum);
-                                        setPayments([...payments, { method: 'cash', amount: remaining }]);
+                                        // ✅ Auto-select a method not already in use
+                                        const usedMethods = payments.map(p => p.method);
+                                        const nextMethod = ['cash', 'nequi', 'bancolombia'].find(m => !usedMethods.includes(m)) || 'cash';
+                                        setPayments([...payments, { method: nextMethod, amount: remaining }]);
                                     }}>+ Agregar Pago</button>
 
                                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: payments.reduce((sum, p) => sum + (p.amount || 0), 0) >= totalTotal ? 'green' : 'orange' }}>
